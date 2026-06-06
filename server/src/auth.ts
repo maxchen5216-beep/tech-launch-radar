@@ -66,12 +66,16 @@ authRoutes.post("/send-code", async (c) => {
     now()
   );
 
-  await sendMail({
+  const sent = await sendMail({
     to: email,
     subject: "【科技圈发布会雷达】登录验证码",
     text: `您的登录验证码为 ${code}，5 分钟内有效。如非本人操作请忽略。`,
     type: "code",
   });
+  if (!sent.ok) {
+    db.query("DELETE FROM auth_codes WHERE email = ?").run(email); // 发送失败的验证码作废
+    return c.json({ error: "mail_failed", message: "邮件发送失败，请稍后再试" }, 502);
+  }
 
   // 邮件推送未上线（mock 驱动）：开发模式下直接回显验证码，便于本地走通流程
   const dev = mailDriver() === "mock";
