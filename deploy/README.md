@@ -31,6 +31,7 @@
 ssh root@<服务器IP>
 
 # 2. 一键初始化（安装 Bun/Caddy、拉代码、配 systemd 自启、备份 cron）
+apt-get update && apt-get install -y git   # 新系统先装 git
 git clone https://github.com/maxchen5216-beep/tech-launch-radar.git /opt/tlr
 bash /opt/tlr/deploy/setup.sh
 
