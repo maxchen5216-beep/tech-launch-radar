@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科技圈发布会雷达 · Tech Launch Radar</title>
+<meta name="description" content="未来科技圈发布会时间及概要 · 与官方信息源交叉校验 · Upcoming tech launch events, cross-checked against official sources">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090d;
+    --surface: #0d1117;
+    --surface-2: #121925;
+    --line: rgba(126, 168, 205, 0.14);
+    --line-strong: rgba(126, 168, 205, 0.28);
+    --ink: #e8eef4;
+    --muted: #8294a6;
+    --faint: #5a6b7c;
+    --green: #00e5a0;
+    --green-dim: rgba(0, 229, 160, 0.12);
+    --amber: #ffb454;
+    --amber-dim: rgba(255, 180, 84, 0.12);
+    --coral: #ff7a6b;
+    --coral-dim: rgba(255, 122, 107, 0.12);
+    --mono: "IBM Plex Mono", "Noto Sans SC", monospace;
+    --display: "Unbounded", "Noto Sans SC", sans-serif;
+    --body: "Archivo", "Noto Sans SC", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  /* ---- atmosphere ---- */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 70% -10%, rgba(0, 229, 160, 0.07), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 10% 10%, rgba(60, 130, 200, 0.06), transparent 60%);
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.5;
+    background-image:
+      linear-gradient(rgba(126,168,205,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(126,168,205,0.035) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 90%);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---- header ---- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0; border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+  .brand .dot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .lang-toggle {
+    display: flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .lang-toggle button {
+    background: transparent; border: 0; color: var(--muted); padding: 7px 16px;
+    cursor: pointer; font-family: inherit; font-size: inherit; transition: all 0.2s;
+  }
+  .lang-toggle button.active { background: var(--green); color: #04130d; font-weight: 600; }
+
+  /* ---- hero ---- */
+  .hero { padding: 72px 0 48px; position: relative; }
+  .hero .eyebrow {
+    font-family: var(--mono); font-size: 12px; color: var(--green);
+    letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 22px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero .eyebrow::before { content: ""; width: 36px; height: 1px; background: var(--green); }
+  .hero h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(34px, 6.2vw, 64px); line-height: 1.08;
+    letter-spacing: -0.01em; margin-bottom: 8px;
+  }
+  .hero h1 .en-sub {
+    display: block; font-size: clamp(15px, 2.2vw, 22px); font-weight: 400;
+    color: var(--muted); margin-top: 14px; letter-spacing: 0.12em;
+  }
+  .hero p.lede { max-width: 600px; color: var(--muted); font-size: 16px; margin-top: 22px; }
+  /* radar sweep */
+  .radar {
+    position: absolute; right: -40px; top: 30px; width: 280px; height: 280px;
+    border-radius: 50%; border: 1px solid var(--line);
+    pointer-events: none; opacity: 0.85;
+  }
+  .radar::before, .radar .ring2 {
+    content: ""; position: absolute; inset: 23%; border-radius: 50%; border: 1px solid var(--line);
+  }
+  .radar .ring3 { position: absolute; inset: 40%; border-radius: 50%; border: 1px solid var(--line-strong); }
+  .radar .sweep {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(0,229,160,0.32), transparent 22%);
+    animation: sweep 5s linear infinite;
+  }
+  .radar .cross-h, .radar .cross-v { position: absolute; background: var(--line); }
+  .radar .cross-h { left: 0; right: 0; top: 50%; height: 1px; }
+  .radar .cross-v { top: 0; bottom: 0; left: 50%; width: 1px; }
+  .radar .blip { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 3s infinite; }
+  @keyframes sweep { to { transform: rotate(360deg); } }
+  @media (max-width: 860px) { .radar { display: none; } }
+
+  /* ---- next-up panel ---- */
+  .next-up {
+    margin-top: 40px; border: 1px solid var(--line-strong); border-radius: 12px;
+    background: linear-gradient(135deg, var(--surface-2), var(--surface));
+    padding: 24px 28px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;
+    justify-content: space-between; position: relative; overflow: hidden;
+  }
+  .next-up::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--green); box-shadow: 0 0 18px var(--green);
+  }
+  .next-up .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--green); text-transform: uppercase; margin-bottom: 8px; }
+  .next-up .event-name { font-size: 20px; font-weight: 700; }
+  .next-up .event-date { font-family: var(--mono); font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .countdown { display: flex; gap: 18px; font-family: var(--mono); }
+  .countdown .unit { text-align: center; }
+  .countdown .num { font-size: 34px; font-weight: 600; color: var(--green); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .countdown .cap { font-size: 10px; letter-spacing: 0.18em; color: var(--faint); text-transform: uppercase; margin-top: 4px; }
+
+  /* ---- stats strip ---- */
+  .stats {
+    display: flex; flex-wrap: wrap; gap: 0; margin-top: 26px;
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  .stats .stat {
+    flex: 1; min-width: 130px; padding: 16px 20px; background: var(--surface);
+    border-right: 1px solid var(--line);
+  }
+  .stats .stat:last-child { border-right: 0; }
+  .stats .num { font-family: var(--mono); font-size: 26px; font-weight: 600; }
+  .stats .cap { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .stat.s-confirmed .num { color: var(--green); }
+  .stat.s-expected .num { color: var(--amber); }
+  .stat.s-rumored .num { color: var(--coral); }
+
+  /* ---- filter bar ---- */
+  .filterbar {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(7, 9, 13, 0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0; margin-top: 52px;
+  }
+  .filterbar-inner { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+    cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--ink); }
+  .chip.active { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+  .chip.st-confirmed.active { background: var(--green); border-color: var(--green); color: #04130d; }
+  .chip.st-expected.active { background: var(--amber); border-color: var(--amber); color: #1d1304; }
+  .chip.st-rumored.active { background: var(--coral); border-color: var(--coral); color: #210b08; }
+  .searchbox {
+    margin-left: auto; font-family: var(--mono); font-size: 13px;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px;
+    color: var(--ink); padding: 8px 14px; width: 200px; outline: none; transition: border-color 0.2s;
+  }
+  .searchbox:focus { border-color: var(--green); }
+  .searchbox::placeholder { color: var(--faint); }
+
+  /* ---- timeline ---- */
+  .timeline { padding: 40px 0 80px; }
+  .month-group { display: grid; grid-template-columns: 150px 1fr; gap: 28px; margin-bottom: 8px; }
+  .month-label {
+    font-family: var(--mono); padding-top: 26px;
+    position: sticky; top: 86px; align-self: start; height: fit-content;
+  }
+  .month-label .m-zh { font-size: 15px; font-weight: 600; color: var(--ink); }
+  .month-label .m-en { font-size: 11px; letter-spacing: 0.22em; color: var(--faint); text-transform: uppercase; margin-top: 3px; }
+  .month-events { border-left: 1px solid var(--line-strong); padding: 18px 0 18px 32px; position: relative; }
+  @media (max-width: 720px) {
+    .month-group { grid-template-columns: 1fr; gap: 0; }
+    .month-label { position: static; padding: 26px 0 0 0; }
+    .month-events { margin-top: 12px; }
+  }
+
+  /* ---- card ---- */
+  .card {
+    position: relative; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 22px 24px; margin-bottom: 18px;
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    animation: rise 0.5s ease backwards;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  .card:hover { transform: translateY(-3px); border-color: var(--line-strong); box-shadow: 0 14px 40px rgba(0,0,0,0.45); }
+  .card::before {
+    content: ""; position: absolute; left: -37px; top: 30px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--muted);
+  }
+  .card.st-confirmed::before { border-color: var(--green); background: var(--green); box-shadow: 0 0 10px rgba(0,229,160,0.7); }
+  .card.st-expected::before { border-color: var(--amber); }
+  .card.st-rumored::before { border-color: var(--coral); border-style: dotted; }
+  .card.past { opacity: 0.45; }
+  .card.past:hover { opacity: 0.8; }
+
+  .card .topline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .badge {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+    padding: 3px 10px; border-radius: 4px; text-transform: uppercase; font-weight: 600;
+  }
+  .badge.confirmed { color: var(--green); background: var(--green-dim); border: 1px solid rgba(0,229,160,0.35); }
+  .badge.expected { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(255,180,84,0.35); }
+  .badge.rumored { color: var(--coral); background: var(--coral-dim); border: 1px solid rgba(255,122,107,0.35); }
+  .badge.cat { color: var(--muted); background: rgba(126,168,205,0.08); border: 1px solid var(--line); text-transform: none; letter-spacing: 0.04em; }
+  .verified-mark {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10.5px; color: var(--green); letter-spacing: 0.06em;
+  }
+  .past-mark { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: 0.1em; }
+
+  .card h3 { font-size: 19px; font-weight: 700; line-height: 1.35; }
+  .card .alt-name { font-size: 12.5px; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+  .card .date { font-family: var(--mono); font-size: 13.5px; color: var(--ink); margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .card .date::before { content: "◷"; color: var(--muted); }
+  .card .organizer { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .card .summary { color: var(--muted); font-size: 14.5px; margin-top: 12px; }
+
+  .card .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 16px; }
+  .src-link {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    color: var(--green); text-decoration: none;
+    border: 1px solid rgba(0,229,160,0.4); border-radius: 7px; padding: 8px 16px;
+    transition: all 0.18s;
+  }
+  .src-link:hover { background: var(--green); color: #04130d; box-shadow: 0 0 22px rgba(0,229,160,0.35); }
+  details.srcnote { font-size: 12.5px; color: var(--faint); flex: 1; min-width: 200px; }
+  details.srcnote summary { cursor: pointer; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; color: var(--muted); list-style: none; }
+  details.srcnote summary::before { content: "▸ "; }
+  details.srcnote[open] summary::before { content: "▾ "; }
+  details.srcnote p { margin-top: 6px; padding: 10px 12px; background: rgba(126,168,205,0.05); border-left: 2px solid var(--line-strong); border-radius: 0 6px 6px 0; }
+
+  .empty { text-align: center; padding: 80px 0; color: var(--faint); font-family: var(--mono); }
+
+  /* ---- legend & footer ---- */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 20px; padding: 22px 26px; margin-top: 10px;
+    border: 1px dashed var(--line-strong); border-radius: 12px;
+    font-size: 13px; color: var(--muted);
+  }
+  .legend .key { display: flex; align-items: center; gap: 8px; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 50%; }
+  .legend .swatch.c { background: var(--green); }
+  .legend .swatch.e { background: var(--amber); }
+  .legend .swatch.r { background: var(--coral); }
+  footer {
+    border-top: 1px solid var(--line); padding: 36px 0 56px;
+    color: var(--faint); font-size: 13px;
+  }
+  footer .method { max-width: 720px; }
+  footer .updated { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  footer .updated .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  /* ---- 登录 / 提醒 ---- */
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  #auth-slot { display: flex; align-items: center; gap: 10px; }
+  .auth-email { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+  .auth-btn {
+    font-family: var(--mono); font-size: 12px; padding: 7px 14px; border-radius: 7px;
+    cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  }
+  .auth-btn.primary { background: transparent; color: var(--green); border: 1px solid rgba(0,229,160,0.4); }
+  .auth-btn.primary:hover { background: var(--green); color: #04130d; }
+  .auth-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line-strong); }
+  .auth-btn.ghost:hover { color: var(--ink); border-color: var(--ink); }
+  .auth-btn.block { display: block; width: 100%; padding: 11px; font-size: 13px; margin-top: 6px; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+    background: rgba(4, 6, 9, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    animation: fadein 0.18s ease;
+  }
+  @keyframes fadein { from { opacity: 0; } }
+  .modal-box {
+    width: min(400px, calc(100vw - 48px)); background: var(--surface-2);
+    border: 1px solid var(--line-strong); border-radius: 14px; padding: 28px;
+    position: relative; box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    animation: rise 0.25s ease;
+  }
+  .modal-box.small { width: min(360px, calc(100vw - 48px)); }
+  .modal-close {
+    position: absolute; top: 12px; right: 14px; background: none; border: 0;
+    color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1;
+  }
+  .modal-close:hover { color: var(--ink); }
+  .modal-title { font-weight: 700; font-size: 17px; margin-bottom: 18px; }
+  .field { margin-bottom: 12px; }
+  .field.row { display: flex; gap: 10px; }
+  .field input {
+    flex: 1; width: 100%; box-sizing: border-box; background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: 8px; color: var(--ink);
+    font-family: var(--mono); font-size: 14px; padding: 11px 14px; outline: none; transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: var(--green); }
+  .dev-hint {
+    font-family: var(--mono); font-size: 11.5px; color: var(--amber);
+    background: var(--amber-dim); border: 1px dashed rgba(255,180,84,0.4);
+    border-radius: 6px; padding: 7px 10px; margin-bottom: 10px;
+  }
+  .modal-err { color: var(--coral); font-size: 12.5px; min-height: 18px; font-family: var(--mono); }
+  .modal-agree { color: var(--faint); font-size: 11.5px; margin-top: 14px; line-height: 1.5; }
+  .lead-row { display: flex; gap: 10px; }
+  .lead-row .auth-btn { flex: 1; padding: 11px 6px; }
+
+  .remind-btn {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 8px 14px;
+    border-radius: 7px; cursor: pointer; transition: all 0.18s; white-space: nowrap;
+    background: transparent; color: var(--amber); border: 1px solid rgba(255,180,84,0.4);
+  }
+  .remind-btn:hover { background: var(--amber); color: #1d1304; }
+  .remind-btn.is-set { color: var(--green); border-color: rgba(0,229,160,0.4); }
+  .remind-btn.is-set:hover { background: var(--coral); border-color: var(--coral); color: #210b08; }
+
+  /* ---- 直播 ---- */
+  @keyframes livepulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+  .badge.live-badge {
+    color: #ff5d5d; background: rgba(255,93,93,0.12); border: 1px solid rgba(255,93,93,0.45);
+    animation: livepulse 1.6s ease-in-out infinite; letter-spacing: 0.1em;
+  }
+  .card.is-live { border-color: rgba(255,93,93,0.35); }
+  .card.is-live::before { border-color: #ff5d5d; background: #ff5d5d; box-shadow: 0 0 12px rgba(255,93,93,0.8); }
+  .live-link {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 12.5px; font-weight: 700;
+    color: #ff5d5d; text-decoration: none;
+    border: 1px solid rgba(255,93,93,0.5); border-radius: 7px; padding: 8px 16px;
+    background: rgba(255,93,93,0.08); transition: all 0.18s;
+    animation: livepulse 2.2s ease-in-out infinite;
+  }
+  .live-link:hover { background: #ff5d5d; color: #1c0606; animation: none; box-shadow: 0 0 24px rgba(255,93,93,0.45); }
+  .live-a { text-decoration: none; }
+  .live-num { font-size: 22px; padding-top: 4px; color: #ff5d5d !important; animation: livepulse 1.6s ease-in-out infinite; }
+  .live-cap { color: var(--muted); text-transform: none; letter-spacing: 0.05em; font-size: 11px; margin-top: 6px; }
+  .live-a:hover .live-cap { color: #ff5d5d; }
+
+  .drawer-overlay { position: fixed; inset: 0; z-index: 90; background: rgba(4,6,9,0.55); animation: fadein 0.18s ease; }
+  .drawer {
+    position: absolute; top: 0; right: 0; bottom: 0; width: min(420px, 92vw);
+    background: var(--surface-2); border-left: 1px solid var(--line-strong);
+    display: flex; flex-direction: column; animation: slidein 0.22s ease;
+  }
+  @keyframes slidein { from { transform: translateX(40px); opacity: 0; } }
+  .drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--line); font-weight: 700;
+  }
+  .drawer-head .modal-close { position: static; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 12px 24px; }
+  .drawer-empty { color: var(--faint); font-family: var(--mono); font-size: 13px; padding: 40px 0; text-align: center; }
+  .sub-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .sub-name { font-size: 14px; font-weight: 600; }
+  .sub-meta { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  .sub-fired { color: var(--green); }
+  .drawer-note {
+    padding: 14px 24px; border-top: 1px solid var(--line);
+    color: var(--faint); font-size: 11.5px; line-height: 1.5;
+  }
+  @media (max-width: 640px) { .auth-email { display: none; } }
+  /* 纯浏览版（后端不可用，如纯静态托管）：隐藏登录与提醒入口 */
+  .tlr-static #auth-slot, .tlr-static .remind-btn { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <span class="dot"></span>
+      <span data-i18n="brand">TECH LAUNCH RADAR · 科技圈发布会雷达</span>
+    </div>
+    <div class="header-right">
+      <div id="auth-slot"></div>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button id="lang-zh" class="active">中文</button>
+        <button id="lang-en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="radar" aria-hidden="true">
+      <div class="sweep"></div>
+      <div class="ring2"></div><div class="ring3"></div>
+      <div class="cross-h"></div><div class="cross-v"></div>
+      <div class="blip" style="top:30%;left:62%"></div>
+      <div class="blip" style="top:58%;left:28%;animation-delay:1.2s"></div>
+      <div class="blip" style="top:70%;left:66%;animation-delay:2.1s"></div>
+    </div>
+    <div class="eyebrow" data-i18n="eyebrow">实时校验 · CROSS-CHECKED AGAINST OFFICIAL SOURCES</div>
+    <h1>
+      <span data-i18n="title">科技圈发布会雷达</span>
+      <span class="en-sub" data-i18n="subtitle">TECH LAUNCH RADAR — UPCOMING KEYNOTES, EXPOS &amp; REVEALS</span>
+    </h1>
+    <p class="lede" data-i18n="lede">追踪未来的科技圈重大发布会：消费电子、AI 与开发者大会、行业展会、游戏与智能汽车、前沿科技。每个条目均与官方信息源交叉校验；未定档的活动以历史规律标注模糊时间，点击「官方信息源」可跳转权威页面。</p>
+
+    <div class="next-up" id="next-up" hidden>
+      <div>
+        <div class="label" data-i18n="nextup">下一场 / NEXT UP</div>
+        <div class="event-name" id="nu-name"></div>
+        <div class="event-date" id="nu-date"></div>
+      </div>
+      <div class="countdown" id="nu-countdown" aria-label="countdown">
+        <div class="unit"><div class="num" id="cd-d">--</div><div class="cap" data-i18n="days">天</div></div>
+        <div class="unit"><div class="num" id="cd-h">--</div><div class="cap" data-i18n="hours">时</div></div>
+        <div class="unit"><div class="num" id="cd-m">--</div><div class="cap" data-i18n="mins">分</div></div>
+        <div class="unit"><div class="num" id="cd-s">--</div><div class="cap" data-i18n="secs">秒</div></div>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div class="filterbar">
+    <div class="filterbar-inner">
+      <div class="chips" id="cat-chips"></div>
+      <div class="chips" id="status-chips"></div>
+      <input class="searchbox" id="search" type="search" placeholder="搜索 / search…">
+    </div>
+  </div>
+
+  <main class="timeline" id="timeline"></main>
+
+  <div class="legend">
+    <div class="key"><span class="swatch c"></span><span data-i18n="lg_c">官方确认 — 已与官方信息源核对</span></div>
+    <div class="key"><span class="swatch e"></span><span data-i18n="lg_e">预计 — 官方未定档，按历史规律推断的模糊时间</span></div>
+    <div class="key"><span class="swatch r"></span><span data-i18n="lg_r">传闻 — 来自媒体/供应链泄露，待官方确认</span></div>
+  </div>
+
+  <footer>
+    <div class="updated"><span class="dot"></span><span id="updated-line"></span></div>
+    <p class="method" data-i18n="method">校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。</p>
+  </footer>
+
+</div>
+
+<script src="data/events-data.js"></script>
+<script>
+(function () {
+  const DATA = window.EVENTS_DATA || { events: [], updated: "" };
+  const $ = (s) => document.querySelector(s);
+
+  // ---------- i18n ----------
+  const I18N = {
+    zh: {
+      brand: "TECH LAUNCH RADAR · 科技圈发布会雷达",
+      eyebrow: "实时校验 · CROSS-CHECKED AGAINST OFFICIAL SOURCES",
+      title: "科技圈发布会雷达",
+      subtitle: "TECH LAUNCH RADAR — UPCOMING KEYNOTES, EXPOS & REVEALS",
+      lede: "追踪未来的科技圈重大发布会：消费电子、AI 与开发者大会、行业展会、游戏与智能汽车、前沿科技。每个条目均与官方信息源交叉校验；未定档的活动以历史规律标注模糊时间，点击「官方信息源」可跳转权威页面。",
+      nextup: "下一场 / NEXT UP",
+      days: "天", hours: "时", mins: "分", secs: "秒",
+      total: "收录活动", confirmed: "官方确认", expected: "预计", rumored: "传闻", live: "今日进行中 · LIVE",
+      liveBadge: "● 进行中", watchLive: "🔴 观看直播", liveGoto: "点击观看直播 →",
+      all: "全部", search: "搜索 / search…",
+      official: "官方信息源 ↗", srcnote: "校验说明", verified: "已核验", past: "已举行",
+      empty: "没有符合条件的活动",
+      lg_c: "官方确认 — 已与官方信息源核对",
+      lg_e: "预计 — 官方未定档，按历史规律推断的模糊时间",
+      lg_r: "传闻 — 来自媒体/供应链泄露，待官方确认",
+      method: "校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。",
+      updated: "数据更新于",
+      cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技" },
+      months: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
+      monthFmt: (y, m) => y + "年" + I18N.zh.months[m]
+    },
+    en: {
+      brand: "TECH LAUNCH RADAR",
+      eyebrow: "LIVE-VERIFIED · CROSS-CHECKED AGAINST OFFICIAL SOURCES",
+      title: "Tech Launch Radar",
+      subtitle: "UPCOMING KEYNOTES, EXPOS & REVEALS ACROSS THE TECH WORLD",
+      lede: "Tracking upcoming major tech events: consumer electronics, AI & developer conferences, industry expos, gaming & smart vehicles, and frontier tech. Every entry is cross-checked against official sources; undated events carry a fuzzy window inferred from historical cadence. Click 'Official source' to jump to the authoritative page.",
+      nextup: "NEXT UP",
+      days: "days", hours: "hrs", mins: "min", secs: "sec",
+      total: "Events", confirmed: "Confirmed", expected: "Expected", rumored: "Rumored", live: "LIVE TODAY",
+      liveBadge: "● LIVE NOW", watchLive: "🔴 Watch live", liveGoto: "Watch the livestream →",
+      all: "All", search: "Search…",
+      official: "Official source ↗", srcnote: "Verification note", verified: "Verified", past: "Past",
+      empty: "No events match the filters",
+      lg_c: "Confirmed — checked against official sources",
+      lg_e: "Expected — no official date yet; fuzzy window inferred from historical cadence",
+      lg_r: "Rumored — based on media / supply-chain leaks, pending official confirmation",
+      method: "Methodology: every entry is cross-checked via web search against official sources (event pages, press releases, official social accounts) before inclusion. 'Expected' and 'Rumored' entries are unconfirmed inferences — official announcements prevail. Data is re-verified and refreshed by a scheduled job.",
+      updated: "Data updated",
+      cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier" },
+      monthFmt: (y, m) => ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][m] + " " + y
+    }
+  };
+
+  const CAT_KEYS = ["consumer", "ai_dev", "expo", "gaming_auto", "frontier"];
+  const ST_KEYS = ["confirmed", "expected", "rumored"];
+
+  let lang = localStorage.getItem("tlr-lang") || "zh";
+  let activeCat = "all";
+  let activeStatus = "all";
+  let query = "";
+
+  const T = () => I18N[lang];
+  const todayStr = () => {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  };
+
+  // ---------- static text ----------
+  function renderStatic() {
+    document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const k = el.getAttribute("data-i18n");
+      if (T()[k]) el.textContent = T()[k];
+    });
+    $("#search").placeholder = T().search;
+    $("#updated-line").textContent = T().updated + " " + DATA.updated + " · " + (lang === "zh" ? DATA.updated_note_zh : DATA.updated_note_en);
+    $("#lang-zh").classList.toggle("active", lang === "zh");
+    $("#lang-en").classList.toggle("active", lang === "en");
+  }
+
+  // ---------- stats ----------
+  function renderStats() {
+    const ev = DATA.events;
+    const count = (s) => ev.filter((e) => e.status === s).length;
+    $("#stats").innerHTML =
+      '<div class="stat"><div class="num">' + ev.length + '</div><div class="cap">' + T().total + "</div></div>" +
+      '<div class="stat s-confirmed"><div class="num">' + count("confirmed") + '</div><div class="cap">' + T().confirmed + "</div></div>" +
+      '<div class="stat s-expected"><div class="num">' + count("expected") + '</div><div class="cap">' + T().expected + "</div></div>" +
+      '<div class="stat s-rumored"><div class="num">' + count("rumored") + '</div><div class="cap">' + T().rumored + "</div></div>";
+  }
+
+  // ---------- filter chips ----------
+  function renderChips() {
+    const cc = $("#cat-chips");
+    cc.innerHTML = "";
+    const mk = (key, label, cls, group) => {
+      const b = document.createElement("button");
+      b.className = "chip " + cls + (key === (group === "cat" ? activeCat : activeStatus) ? " active" : "");
+      b.textContent = label;
+      b.onclick = () => {
+        if (group === "cat") activeCat = key;
+        else activeStatus = (activeStatus === key) ? "all" : key; // toggle off on re-click
+        renderChips(); renderTimeline();
+      };
+      return b;
+    };
+    cc.appendChild(mk("all", T().all, "", "cat"));
+    CAT_KEYS.forEach((k) => cc.appendChild(mk(k, T().cats[k], "", "cat")));
+    const sc = $("#status-chips");
+    sc.innerHTML = "";
+    ST_KEYS.forEach((k) => sc.appendChild(mk(k, T()[k], "st-" + k, "status")));
+  }
+
+  // ---------- timeline ----------
+  function filtered() {
+    const q = query.trim().toLowerCase();
+    return DATA.events
+      .filter((e) => activeCat === "all" || e.category === activeCat)
+      .filter((e) => activeStatus === "all" || e.status === activeStatus)
+      .filter((e) => !q || (e.name_en + " " + e.name_zh + " " + e.organizer).toLowerCase().includes(q))
+      .sort((a, b) => a.date_sort.localeCompare(b.date_sort));
+  }
+
+  function esc(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // 进行中判定：今天在 [date_sort, date_end] 区间内（无 date_end 视为单日活动）
+  function eventEnd(e) { return e.date_end || e.date_sort; }
+  function isLiveNow(e) { const t = todayStr(); return e.date_sort <= t && t <= eventEnd(e); }
+
+  function cardHTML(e, idx) {
+    const isPast = eventEnd(e) < todayStr();
+    const live = isLiveNow(e);
+    const name = lang === "zh" ? e.name_zh : e.name_en;
+    const altName = lang === "zh" ? e.name_en : e.name_zh;
+    const date = lang === "zh" ? e.date_display_zh : e.date_display_en;
+    const summary = lang === "zh" ? e.summary_zh : e.summary_en;
+    return (
+      '<article class="card st-' + e.status + (isPast ? " past" : "") + (live ? " is-live" : "") + '" style="animation-delay:' + Math.min(idx * 40, 400) + 'ms">' +
+        '<div class="topline">' +
+          (live ? '<span class="badge live-badge">' + T().liveBadge + "</span>" : "") +
+          '<span class="badge ' + e.status + '">' + T()[e.status] + "</span>" +
+          '<span class="badge cat">' + T().cats[e.category] + "</span>" +
+          (e.verified ? '<span class="verified-mark">✓ ' + T().verified + "</span>" : "") +
+          (isPast ? '<span class="past-mark">· ' + T().past + "</span>" : "") +
+        "</div>" +
+        "<h3>" + esc(name) + "</h3>" +
+        '<div class="alt-name">' + esc(altName) + "</div>" +
+        '<div class="date">' + esc(date) + "</div>" +
+        '<div class="organizer">' + esc(e.organizer) + "</div>" +
+        '<p class="summary">' + esc(summary) + "</p>" +
+        '<div class="foot">' +
+          (live && e.live_url ? '<a class="live-link" href="' + esc(e.live_url) + '" target="_blank" rel="noopener noreferrer">' + T().watchLive + " ↗</a>" : "") +
+          '<a class="src-link" href="' + esc(e.official_url) + '" target="_blank" rel="noopener noreferrer">' + T().official + "</a>" +
+          '<button class="remind-btn" data-event-id="' + esc(e.id) + '" data-event-status="' + e.status + '"></button>' +
+          '<details class="srcnote"><summary>' + T().srcnote + "</summary><p>" + esc(e.source_note_zh) + "</p></details>" +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function renderTimeline() {
+    const list = filtered();
+    const tl = $("#timeline");
+    if (!list.length) {
+      tl.innerHTML = '<div class="empty">∅ ' + T().empty + "</div>";
+      return;
+    }
+    // group by YYYY-MM
+    const groups = new Map();
+    list.forEach((e) => {
+      const key = e.date_sort.slice(0, 7);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(e);
+    });
+    let html = "";
+    let idx = 0;
+    for (const [key, evs] of groups) {
+      const [y, m] = key.split("-").map(Number);
+      const zhLabel = I18N.zh.monthFmt(y, m - 1);
+      const enLabel = I18N.en.monthFmt(y, m - 1);
+      html +=
+        '<section class="month-group">' +
+          '<div class="month-label"><div class="m-zh">' + (lang === "zh" ? zhLabel : enLabel) + '</div><div class="m-en">' + (lang === "zh" ? enLabel : zhLabel) + "</div></div>" +
+          '<div class="month-events">' + evs.map((e) => cardHTML(e, idx++)).join("") + "</div>" +
+        "</section>";
+    }
+    tl.innerHTML = html;
+    if (window.TLR_AFTER_RENDER) window.TLR_AFTER_RENDER(); // 提醒模块贴按钮状态
+  }
+
+  // ---------- next up + countdown ----------
+  let cdTimer = null;
+  function renderNextUp() {
+    const now = todayStr();
+    // 含进行中的多日活动（结束日期未过即纳入候选）
+    const future = DATA.events
+      .filter((e) => eventEnd(e) >= now)
+      .sort((a, b) => a.date_sort.localeCompare(b.date_sort));
+    // prefer the nearest confirmed event for the countdown (a real, fixed date)
+    const next = future.find((e) => e.status === "confirmed") || future[0];
+    if (!next) return;
+    $("#next-up").hidden = false;
+    $("#nu-name").textContent = lang === "zh" ? next.name_zh : next.name_en;
+    $("#nu-date").textContent = (lang === "zh" ? next.date_display_zh : next.date_display_en);
+    const target = new Date(next.date_sort + "T00:00:00");
+    if (cdTimer) clearInterval(cdTimer);
+    if (target - new Date() <= 0) {
+      // event is ongoing — show LIVE instead of a zeroed countdown; link to livestream if available
+      const liveInner = '<div class="unit"><div class="num live-num">●&nbsp;' + T().live + "</div>" + (next.live_url ? '<div class="cap live-cap">' + T().liveGoto + "</div>" : "") + "</div>";
+      $("#nu-countdown").innerHTML = next.live_url
+        ? '<a class="live-a" href="' + esc(next.live_url) + '" target="_blank" rel="noopener noreferrer">' + liveInner + "</a>"
+        : liveInner;
+      return;
+    }
+    // rebuild countdown structure (may have been replaced by a LIVE state earlier)
+    $("#nu-countdown").innerHTML =
+      '<div class="unit"><div class="num" id="cd-d">--</div><div class="cap">' + T().days + "</div></div>" +
+      '<div class="unit"><div class="num" id="cd-h">--</div><div class="cap">' + T().hours + "</div></div>" +
+      '<div class="unit"><div class="num" id="cd-m">--</div><div class="cap">' + T().mins + "</div></div>" +
+      '<div class="unit"><div class="num" id="cd-s">--</div><div class="cap">' + T().secs + "</div></div>";
+    const tick = () => {
+      let diff = target - new Date();
+      if (diff < 0) diff = 0;
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor(diff / 3600000) % 24;
+      const m = Math.floor(diff / 60000) % 60;
+      const s = Math.floor(diff / 1000) % 60;
+      $("#cd-d").textContent = String(d);
+      $("#cd-h").textContent = String(h).padStart(2, "0");
+      $("#cd-m").textContent = String(m).padStart(2, "0");
+      $("#cd-s").textContent = String(s).padStart(2, "0");
+    };
+    tick();
+    cdTimer = setInterval(tick, 1000);
+  }
+
+  // ---------- events ----------
+  $("#lang-zh").onclick = () => setLang("zh");
+  $("#lang-en").onclick = () => setLang("en");
+  function setLang(l) {
+    lang = l;
+    localStorage.setItem("tlr-lang", l);
+    renderAll();
+  }
+  $("#search").addEventListener("input", (e) => { query = e.target.value; renderTimeline(); });
+
+  function renderAll() {
+    renderStatic(); renderStats(); renderChips(); renderTimeline(); renderNextUp();
+    if (window.TLR_AFTER_ALL) window.TLR_AFTER_ALL(); // 登录模块刷新 header 文案
+  }
+  renderAll();
+})();
+</script>
+<script>
+  // 后端 API 地址：file:// 打开时指向本地服务；由后端同源托管时留空
+  window.API_BASE = location.protocol === "file:" ? "http://localhost:8787" : "";
+</script>
+<script src="assets/auth.js"></script>
+<script src="assets/reminders.js"></script>
+</body>
+</html>
