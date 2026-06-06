@@ -39,7 +39,7 @@ MAIL_DRIVER=directmail
 # ↓↓↓ 填入 RAM 子账号的 AccessKey（仅授权 DirectMail）与已验证的发信地址 ↓↓↓
 ALIYUN_AK=
 ALIYUN_SK=
-MAIL_FROM=noreply@mail.maxchen.fun
+MAIL_FROM=noreply@mail.nextlaunch.cn
 MAIL_FROM_ALIAS=科技圈发布会雷达
 # 随机生成的生产密钥（请勿外泄）
 JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '=+/')

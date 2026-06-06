@@ -1,4 +1,4 @@
-# 阿里云国内服务器部署手册（maxchen.fun）
+# 阿里云国内服务器部署手册（nextlaunch.cn）
 
 > 完整版部署：静态页 + 后端（登录/提醒）+ DirectMail 真实邮件。
 > 关键路径是 ICP 备案（7-20 个工作日），其余都可以在备案等待期内完成。
@@ -13,15 +13,15 @@
 - 买完记下：公网 IP、root 密码（或设置密钥）
 
 **② 提交 ICP 备案**（阿里云控制台 → ICP 备案）
-- 个人主体；关联刚买的服务器；域名 maxchen.fun
+- 个人主体；关联刚买的服务器；域名 nextlaunch.cn
 - 资料：身份证正反面、本人手机号
 - 网站名称用**个人化、非经营性**的名字（如「麦琛的科技日历」），不要带行业/公司字样；服务内容选"个人空间/其他"
 - 阿里云 APP 人脸核验后提交；管局电话回访时如实说"个人网站，展示科技活动日历"
 - ⚠️ 备案通过前，域名**不能**解析到服务器；测试用 IP 访问（合规）
 
 **③ 配置发信域名**（阿里云控制台 → 邮件推送 DirectMail，不受备案限制）
-1. 发信域名 → 新建 `mail.maxchen.fun` → 按页面提示去"云解析 DNS"加 4 条记录（SPF/MX/CNAME/TXT）→ 回来点验证
-2. 发信地址 → 新建 `noreply@mail.maxchen.fun`，类型选**触发邮件**
+1. 发信域名 → 新建 `mail.nextlaunch.cn` → 按页面提示去"云解析 DNS"加 4 条记录（SPF/MX/CNAME/TXT）→ 回来点验证
+2. 发信地址 → 新建 `noreply@mail.nextlaunch.cn`，类型选**触发邮件**
 3. RAM 访问控制 → 创建子用户（勾选 OpenAPI 调用）→ 授权 `AliyunDirectMailFullAccess` → 记下 AccessKey ID / Secret
 
 ### 服务器初始化（买好服务器就能做）
@@ -60,11 +60,11 @@ curl http://127.0.0.1:8787/api/health   # mail_driver 应为 directmail
 ### 备案通过后（上线日）
 
 ```bash
-# 1. 云解析 DNS：maxchen.fun 添加 A 记录 → 服务器IP（www 可加 CNAME → maxchen.fun）
+# 1. 云解析 DNS：nextlaunch.cn 添加 A 记录 → 服务器IP（www 可加 CNAME → nextlaunch.cn）
 # 2. 切换 Caddy 到域名模式：
-nano /etc/caddy/Caddyfile     # 注释 :80 块，取消 maxchen.fun 块的注释
+nano /etc/caddy/Caddyfile     # 注释 :80 块，取消 nextlaunch.cn 块的注释
 systemctl reload caddy        # 自动申请 HTTPS 证书，约1分钟
-# 3. 浏览器验证 https://maxchen.fun
+# 3. 浏览器验证 https://nextlaunch.cn
 ```
 
 - 30 天内做**公安备案**：beian.mps.gov.cn

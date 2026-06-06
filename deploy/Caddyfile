@@ -7,7 +7,7 @@
 # 【模式二：备案后 · 域名 + 自动 HTTPS】
 #   备案通过、域名 A 记录解析到本服务器后：
 #   1. 注释掉下面的 :80 块
-#   2. 取消 maxchen.fun 块的注释
+#   2. 取消 nextlaunch.cn 块的注释
 #   3. systemctl reload caddy（Caddy 会自动申请并续期 Let's Encrypt 证书）
 # ============================================================
 
@@ -18,11 +18,11 @@
 }
 
 # ---- 模式二：备案后域名模式（备案通过后启用） ----
-# maxchen.fun {
+# nextlaunch.cn {
 # 	reverse_proxy 127.0.0.1:8787
 # 	encode gzip
 # }
 #
-# www.maxchen.fun {
-# 	redir https://maxchen.fun{uri} permanent
+# www.nextlaunch.cn {
+# 	redir https://nextlaunch.cn{uri} permanent
 # }

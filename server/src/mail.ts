@@ -8,7 +8,7 @@ import { db, now } from "./db";
  *   - mock（默认）：不发送任何真实邮件，仅打印日志并写 email_log（status='mock'）。
  *     开发模式下验证码会回显给前端（dev_code），生产环境严禁使用。
  *   - directmail：阿里云邮件推送 DirectMail（SingleSendMail API，HMAC-SHA1 签名直调 HTTP）。
- *     需要环境变量：ALIYUN_AK、ALIYUN_SK、MAIL_FROM（已验证的发信地址，如 noreply@mail.maxchen.fun）、
+ *     需要环境变量：ALIYUN_AK、ALIYUN_SK、MAIL_FROM（已验证的发信地址，如 noreply@mail.nextlaunch.cn）、
  *     可选 MAIL_FROM_ALIAS（发件人昵称，默认"科技圈发布会雷达"）。
  *   - resend：Resend API。需要 RESEND_API_KEY、MAIL_FROM（已验证发信域名下的地址）。
  *
