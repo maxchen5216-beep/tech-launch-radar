@@ -1,0 +1,16 @@
+{
+  "description": "下一场发布会 · 微信小程序",
+  "miniprogramRoot": "./",
+  "compileType": "miniprogram",
+  "appid": "",
+  "projectname": "next-launch-miniprogram",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true
+  },
+  "libVersion": "latest"
+}

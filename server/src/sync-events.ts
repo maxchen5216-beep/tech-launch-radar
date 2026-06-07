@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { db, now } from "./db";
-import { sendMail, alreadySent } from "./mail";
+import { deliverReminder } from "./scan-reminders";
 
 const DATA_FILE = join(import.meta.dir, "..", "..", "data", "events-data.js");
 
@@ -14,7 +14,7 @@ interface EventRow {
 }
 
 /** 从 data/events-data.js 中提取事件数组（文件为 window.EVENTS_DATA = {...}; 形式，对象体是合法 JSON） */
-async function loadEventsFromFile(): Promise<EventRow[]> {
+export async function loadEventsFromFile(): Promise<EventRow[]> {
   const src = await Bun.file(DATA_FILE).text();
   const m = src.match(/window\.EVENTS_DATA\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
   if (!m) throw new Error("无法解析 events-data.js（未找到 window.EVENTS_DATA 赋值）");
@@ -59,21 +59,18 @@ async function doSync(): Promise<{ synced: number; announced: string[]; removed:
       announced.push(e.id);
       const subs = db
         .query(
-          `SELECT u.email FROM subscriptions s JOIN users u ON u.id = s.user_id
+          `SELECT s.id AS sub_id, s.wx_credit, u.email, u.openid FROM subscriptions s JOIN users u ON u.id = s.user_id
            WHERE s.event_id = ? AND s.mode = 'on_announce' AND s.status = 'active'`
         )
-        .all(e.id) as { email: string }[];
+        .all(e.id) as { sub_id: number; wx_credit: number; email: string | null; openid: string | null }[];
 
-      for (const { email } of subs) {
-        const msg = {
-          to: email,
-          type: "announce" as const,
-          eventId: e.id,
-          meta: e.date_sort,
-          subject: `【科技圈发布会雷达】${e.name_zh} 已官宣定档`,
-          text: `您关注的「${e.name_zh} / ${e.name_en}」已官宣，时间：${e.date_sort}。\n官方信息源：${e.official_url}\n回到网站可设置开始前提醒。`,
-        };
-        if (!alreadySent(msg)) await sendMail(msg);
+      for (const s of subs) {
+        // 邮箱用户走邮件、小程序用户走微信订阅消息（deliverReminder 内部分流 + 幂等）
+        await deliverReminder({
+          email: s.email, openid: s.openid, wxCredit: s.wx_credit, subId: s.sub_id,
+          eventId: e.id, name_zh: e.name_zh, name_en: e.name_en, date_sort: e.date_sort, official_url: e.official_url,
+          type: "announce", meta: e.date_sort, leadDaysText: "已官宣定档",
+        });
       }
       db.query("UPDATE subscriptions SET status = 'fired' WHERE event_id = ? AND mode = 'on_announce' AND status = 'active'").run(e.id);
     }

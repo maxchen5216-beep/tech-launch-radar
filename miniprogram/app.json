@@ -1,0 +1,29 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/detail",
+    "pages/reminders/reminders",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#07090d",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "下一场发布会",
+    "backgroundColor": "#07090d",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#5a6b7c",
+    "selectedColor": "#00e5a0",
+    "backgroundColor": "#0d1117",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "发布会" },
+      { "pagePath": "pages/reminders/reminders", "text": "我的提醒" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

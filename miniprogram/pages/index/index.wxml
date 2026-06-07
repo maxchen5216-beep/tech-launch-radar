@@ -1,0 +1,43 @@
+<view class="page">
+  <view class="hero">
+    <view class="eyebrow">科技前沿 · 一手掌握</view>
+    <view class="title">下一场发布会</view>
+  </view>
+
+  <!-- 筛选 -->
+  <scroll-view class="chips" scroll-x>
+    <view
+      wx:for="{{cats}}" wx:key="key"
+      class="chip {{activeCat === item.key ? 'on' : ''}}"
+      data-key="{{item.key}}" bindtap="onCat">{{item.label}}</view>
+  </scroll-view>
+  <view class="search">
+    <input placeholder="搜索发布会 / 厂商" placeholder-class="ph" value="{{keyword}}" bindinput="onSearch" />
+  </view>
+
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+  <view wx:elif="{{list.length === 0}}" class="empty">没有符合条件的活动</view>
+
+  <!-- 列表 -->
+  <view
+    wx:for="{{list}}" wx:key="id"
+    class="card {{item._live ? 'live' : ''}} {{item._past ? 'past' : ''}}"
+    data-id="{{item.id}}" bindtap="goDetail">
+    <view class="topline">
+      <text wx:if="{{item._live}}" class="badge live">● 进行中</text>
+      <text class="badge {{item.status}}">{{item._statusText}}</text>
+      <text class="badge cat">{{item._catText}}</text>
+      <text wx:if="{{item.verified}}" class="green vmark">✓ 已核验</text>
+    </view>
+    <view class="cname">{{item.name_zh}}</view>
+    <view class="cdate">◷ {{item.date_display_zh}}</view>
+    <view class="muted corg">{{item.organizer}}</view>
+    <view class="csum muted">{{item.summary_zh}}</view>
+    <view class="cfoot">
+      <view wx:if="{{item._live && item.live_url}}" class="btn" style="color:#ff5d5d;border:1rpx solid rgba(255,93,93,.5)" catchtap="openLive" data-url="{{item.live_url}}">🔴 直播链接</view>
+      <view class="btn btn-ghost">查看详情 / 评论 ›</view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && list.length}}" class="tip faint">下拉刷新 · 数据与官方信息源交叉校验</view>
+</view>

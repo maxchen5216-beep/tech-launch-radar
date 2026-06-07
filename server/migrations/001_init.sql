@@ -1,12 +1,15 @@
 -- 科技圈发布会雷达 · 后端数据库初始化
+-- 用户：网页端用 email 登录，小程序端用 openid 登录；两者均可空（一个用户至少有其一）
 CREATE TABLE IF NOT EXISTS users (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  email         TEXT UNIQUE NOT NULL,
+  email         TEXT UNIQUE,      -- 网页邮箱登录；小程序用户为空（SQLite UNIQUE 允许多个 NULL）
+  openid        TEXT,             -- 小程序微信登录；网页用户为空（唯一性由 db.ts 的部分索引保证）
   nickname      TEXT,             -- 首次登录后引导填写
   avatar        TEXT,             -- 'p:<序号>'=卡通预设 | 'u:<文件名>'=用户上传
   created_at    TEXT NOT NULL,
   last_login_at TEXT
 );
+-- openid 唯一索引在 db.ts 迁移里创建（须在为老库补 openid 列之后）
 
 -- 验证码：只存哈希，5 分钟有效，最多尝试 5 次
 CREATE TABLE IF NOT EXISTS auth_codes (
@@ -40,6 +43,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   mode        TEXT NOT NULL CHECK (mode IN ('before_event','on_announce')),
   lead_days   INTEGER,
   status      TEXT NOT NULL DEFAULT 'active',  -- active | fired
+  wx_credit   INTEGER NOT NULL DEFAULT 0,      -- 微信一次性订阅消息的剩余发送额度（小程序用户）
   created_at  TEXT NOT NULL,
   UNIQUE(user_id, event_id)
 );

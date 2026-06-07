@@ -5,15 +5,20 @@ import { db, now } from "./db";
 import { allow } from "./ratelimit";
 import { requireAuth, jwtSecret } from "./auth";
 import { checkSensitive } from "./sensitive";
+import { msgSecCheck } from "./wx";
 
 const MAX_LEN = 200;
 
-/** 管理员邮箱列表（ADMIN_EMAILS 逗号分隔），管理员可删除任何评论 */
+/** 管理员：邮箱（ADMIN_EMAILS）或小程序 openid（ADMIN_OPENIDS），逗号分隔。可删除任何评论 */
 function isAdmin(uid: number): boolean {
-  const admins = (process.env.ADMIN_EMAILS || "").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
-  if (!admins.length) return false;
-  const u = db.query("SELECT email FROM users WHERE id = ?").get(uid) as { email: string } | null;
-  return !!u && admins.includes(u.email.toLowerCase());
+  const emails = (process.env.ADMIN_EMAILS || "").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
+  const openids = (process.env.ADMIN_OPENIDS || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!emails.length && !openids.length) return false;
+  const u = db.query("SELECT email, openid FROM users WHERE id = ?").get(uid) as { email: string | null; openid: string | null } | null;
+  if (!u) return false;
+  if (u.email && emails.includes(u.email.toLowerCase())) return true;
+  if (u.openid && openids.includes(u.openid)) return true;
+  return false;
 }
 
 /** 可选鉴权：带了有效 token 则取 uid，否则 null（用于公开的评论列表标记 mine/可删） */
@@ -76,10 +81,17 @@ commentRoutes.post("/", requireAuth, async (c) => {
   const event = db.query("SELECT id FROM events WHERE id = ?").get(eventId);
   if (!event) return c.json({ error: "event_not_found", message: "活动不存在" }, 404);
 
-  // 敏感词检测（用户已确认的词库；阻止发布并提示命中词）
+  // 敏感词检测（自有词库；阻止发布并提示命中词）
   const hits = checkSensitive(content);
   if (hits.length) {
     return c.json({ error: "sensitive_words", words: hits, message: "评论包含敏感词：" + hits.join("、") + "，请修改后再发布" }, 400);
+  }
+
+  // 小程序用户额外过微信内容安全（UGC 合规要求；叠加在关键词过滤之上）
+  const u = db.query("SELECT openid FROM users WHERE id = ?").get(uid) as { openid: string | null } | null;
+  if (u?.openid) {
+    const pass = await msgSecCheck(content, u.openid);
+    if (!pass) return c.json({ error: "wx_sec_blocked", message: "评论含违规内容，请修改后再发布" }, 400);
   }
 
   // 限频：每人每分钟 1 条、每天 5 条

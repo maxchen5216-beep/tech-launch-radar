@@ -5,9 +5,10 @@ import { db, localDateStr, metaGet, metaSet, AVATAR_DIR } from "./db";
 import { authRoutes } from "./auth";
 import { subRoutes } from "./subscriptions";
 import { commentRoutes } from "./comments";
-import { syncEvents } from "./sync-events";
+import { syncEvents, loadEventsFromFile } from "./sync-events";
 import { scanReminders } from "./scan-reminders";
 import { mailDriver } from "./mail";
+import { wxRoutes } from "./wx";
 
 const PORT = Number(process.env.PORT || 8787);
 const INTERNAL_KEY = process.env.INTERNAL_KEY || "dev-internal-key";
@@ -37,8 +38,19 @@ app.use("/api/*", cors({
 }));
 
 app.route("/api/auth", authRoutes);
+app.route("/api/wx", wxRoutes);
 app.route("/api/subscriptions", subRoutes);
 app.route("/api/comments", commentRoutes);
+
+// 小程序首屏事件数据（完整字段，含 date_end/live_url）。5 分钟内存缓存。
+let eventsCache: { at: number; data: unknown[] } = { at: 0, data: [] };
+app.get("/api/events", async (c) => {
+  const nowMs = Date.now();
+  if (nowMs - eventsCache.at > 5 * 60 * 1000 || !eventsCache.data.length) {
+    try { eventsCache = { at: nowMs, data: await loadEventsFromFile() }; } catch { /* 保留旧缓存 */ }
+  }
+  return c.json({ events: eventsCache.data });
+});
 
 app.get("/api/health", (c) =>
   c.json({ ok: true, mail_driver: mailDriver(), events: (db.query("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n })

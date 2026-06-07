@@ -1,0 +1,30 @@
+.head { font-size: 44rpx; font-weight: 800; padding: 40rpx 32rpx 20rpx; }
+.login-box { padding: 80rpx 48rpx; text-align: center; }
+.privacy { display: block; font-size: 22rpx; margin-top: 24rpx; }
+
+.sec-title { font-size: 32rpx; font-weight: 700; margin-bottom: 22rpx; }
+.nick-input {
+  background: #07090d; border: 1rpx solid rgba(126,168,205,.28); border-radius: 12rpx;
+  padding: 20rpx 24rpx; font-size: 28rpx; color: #e8eef4;
+}
+.lbl { font-size: 22rpx; letter-spacing: 2rpx; margin: 22rpx 0 14rpx; }
+.grid { display: flex; flex-wrap: wrap; gap: 20rpx; }
+.opt {
+  width: 96rpx; height: 96rpx; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44rpx; border: 3rpx solid rgba(126,168,205,.2);
+  background: #0d1117; padding: 0; line-height: 1;
+}
+.opt.sel { border-color: #00e5a0; }
+.opt-up { font-size: 20rpx; color: #8294a6; border-style: dashed; }
+.opt-img { overflow: hidden; }
+.opt-img-i { width: 100%; height: 100%; border-radius: 50%; }
+
+.profile-card { text-align: center; padding: 50rpx 30rpx; }
+.avatar.big { width: 140rpx; height: 140rpx; font-size: 64rpx; margin: 0 auto; }
+.big-img { width: 140rpx; height: 140rpx; border-radius: 50%; }
+.pname { font-size: 36rpx; font-weight: 700; margin-top: 24rpx; }
+
+.links { margin: 30rpx 24rpx; }
+.link { background: #0d1117; border: 1rpx solid rgba(126,168,205,.14); border-radius: 14rpx; padding: 28rpx; text-align: center; font-size: 28rpx; margin-bottom: 18rpx; }
+.link.danger { color: #ff7a6b; }

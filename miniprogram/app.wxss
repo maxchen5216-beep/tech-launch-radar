@@ -1,0 +1,57 @@
+/* 全局主题：深色 + 薄荷绿，复刻网页版 */
+page {
+  background: #07090d;
+  color: #e8eef4;
+  font-family: -apple-system, "PingFang SC", sans-serif;
+  font-size: 28rpx;
+}
+
+.muted { color: #8294a6; }
+.faint { color: #5a6b7c; }
+.green { color: #00e5a0; }
+
+/* 状态徽章 */
+.badge {
+  display: inline-block;
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  letter-spacing: 1rpx;
+}
+.badge.confirmed { color: #00e5a0; background: rgba(0,229,160,.12); border: 1rpx solid rgba(0,229,160,.35); }
+.badge.expected { color: #ffb454; background: rgba(255,180,84,.12); border: 1rpx solid rgba(255,180,84,.35); }
+.badge.rumored { color: #ff7a6b; background: rgba(255,122,107,.12); border: 1rpx solid rgba(255,122,107,.35); }
+.badge.cat { color: #8294a6; background: rgba(126,168,205,.08); border: 1rpx solid rgba(126,168,205,.14); }
+.badge.live { color: #ff5d5d; background: rgba(255,93,93,.12); border: 1rpx solid rgba(255,93,93,.45); }
+
+/* 卡片 */
+.card {
+  background: #0d1117;
+  border: 1rpx solid rgba(126,168,205,.14);
+  border-radius: 22rpx;
+  padding: 30rpx;
+  margin: 0 24rpx 24rpx;
+}
+.card.live { border-color: rgba(255,93,93,.35); }
+
+/* 按钮 */
+.btn {
+  display: inline-block;
+  font-size: 26rpx;
+  padding: 16rpx 30rpx;
+  border-radius: 12rpx;
+  text-align: center;
+  line-height: 1.2;
+}
+.btn-primary { color: #04130d; background: #00e5a0; }
+.btn-ghost { color: #00e5a0; background: transparent; border: 1rpx solid rgba(0,229,160,.4); }
+.btn-amber { color: #1d1304; background: #ffb454; }
+.btn-block { display: block; width: 100%; box-sizing: border-box; padding: 24rpx; font-size: 30rpx; }
+
+button::after { border: none; }
+
+.avatar {
+  width: 56rpx; height: 56rpx; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 28rpx; border: 1rpx solid rgba(126,168,205,.28);
+}

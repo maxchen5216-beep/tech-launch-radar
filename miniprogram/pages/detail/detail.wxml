@@ -1,0 +1,67 @@
+<view wx:if="{{event}}" class="wrap">
+  <!-- 事件信息 -->
+  <view class="card {{event._live ? 'live' : ''}}">
+    <view class="topline">
+      <text wx:if="{{event._live}}" class="badge live">● 进行中</text>
+      <text class="badge {{event.status}}">{{event._statusText}}</text>
+      <text class="badge cat">{{event._catText}}</text>
+    </view>
+    <view class="name">{{event.name_zh}}</view>
+    <view class="ename faint">{{event.name_en}}</view>
+    <view class="date">◷ {{event.date_display_zh}}</view>
+    <view class="muted org">{{event.organizer}}</view>
+    <view class="summary muted">{{event.summary_zh}}</view>
+    <view class="row">
+      <view wx:if="{{event._live && event.live_url}}" class="btn" style="color:#ff5d5d;border:1rpx solid rgba(255,93,93,.5)" bindtap="copyLive">🔴 复制直播链接</view>
+      <view class="btn btn-ghost" bindtap="copyOfficial">复制官方信息源</view>
+    </view>
+    <view class="note faint">来源校验：{{event.source_note_zh}}</view>
+  </view>
+
+  <!-- 订阅 -->
+  <view class="card">
+    <view class="sec-title">提醒订阅</view>
+    <block wx:if="{{sub}}">
+      <view class="subbed green">✓ 已订阅：{{sub.mode === 'before_event' ? '开始前 ' + sub.lead_days + ' 天提醒' : '官宣后通知'}}</view>
+      <view class="btn btn-ghost btn-block" data-mode="cancel" bindtap="onSubscribe" style="margin-top:18rpx">取消订阅</view>
+    </block>
+    <block wx:elif="{{event.status === 'confirmed'}}">
+      <view class="muted s-hint">选择开始前多久提醒（微信推送）：</view>
+      <view class="lead-row">
+        <view wx:for="{{leadOptions}}" wx:key="*this" class="btn btn-primary lead" data-mode="before_event" data-lead="{{item}}" bindtap="onSubscribe">提前{{item}}天</view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="muted s-hint">该活动尚未官宣定档</view>
+      <view class="btn btn-amber btn-block" data-mode="on_announce" bindtap="onSubscribe" style="margin-top:14rpx">📌 关注，官宣后通知我</view>
+    </block>
+  </view>
+
+  <!-- 评论 -->
+  <view class="card">
+    <view class="sec-title">评论（{{comments.length}}）</view>
+    <view wx:if="{{comments.length === 0}}" class="faint empty-c">还没有评论，来抢沙发</view>
+    <view wx:for="{{comments}}" wx:key="id" class="cmt">
+      <view class="avatar" style="{{item._av.type === 'emoji' ? 'background:' + item._av.bg : ''}}">
+        <image wx:if="{{item._av.type === 'img'}}" src="{{item._av.value}}" class="av-img" />
+        <text wx:else>{{item._av.value}}</text>
+      </view>
+      <view class="cmt-body">
+        <view class="cmt-meta">
+          <text class="cmt-nick">{{item.nickname}}</text>
+          <text class="cmt-time faint">{{item.created_at}}</text>
+          <text wx:if="{{item.can_delete}}" class="cmt-del" data-cid="{{item.id}}" bindtap="onDelete">删除</text>
+        </view>
+        <view class="cmt-text">{{item.content}}</view>
+      </view>
+    </view>
+
+    <view class="composer">
+      <textarea class="cmt-input" maxlength="200" placeholder="友善交流，≤200字（含敏感词无法发布）" placeholder-class="ph" value="{{input}}" bindinput="onInput" />
+      <view class="composer-foot">
+        <text class="faint">{{input.length}}/200</text>
+        <view class="btn btn-primary" bindtap="onPost">{{posting ? '发布中…' : '发布'}}</view>
+      </view>
+    </view>
+  </view>
+</view>

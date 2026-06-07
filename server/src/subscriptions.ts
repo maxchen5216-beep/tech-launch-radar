@@ -29,6 +29,8 @@ subRoutes.post("/", async (c) => {
   const eventId = String(body.event_id || "");
   const mode = String(body.mode || "");
   const leadDays = body.lead_days != null ? Number(body.lead_days) : null;
+  // 小程序端 wx.requestSubscribeMessage 授权成功后置 true → 给该订阅 +1 次一次性发送额度
+  const wxAuthorized = body.wx_authorized === true;
 
   const event = db.query("SELECT id, status FROM events WHERE id = ?").get(eventId) as { id: string; status: string } | null;
   if (!event) return c.json({ error: "event_not_found", message: "事件不存在（可能需要先同步事件数据）" }, 404);
@@ -48,11 +50,13 @@ subRoutes.post("/", async (c) => {
     return c.json({ error: "too_many_subscriptions", message: `订阅数量已达上限（${MAX_SUBS_PER_USER}）` }, 400);
   }
 
+  const credit = wxAuthorized ? 1 : 0;
   db.query(
-    `INSERT INTO subscriptions(user_id, event_id, mode, lead_days, status, created_at)
-     VALUES(?,?,?,?,'active',?)
-     ON CONFLICT(user_id, event_id) DO UPDATE SET mode = excluded.mode, lead_days = excluded.lead_days, status = 'active'`
-  ).run(uid, eventId, mode, mode === "before_event" ? leadDays : null, now());
+    `INSERT INTO subscriptions(user_id, event_id, mode, lead_days, status, wx_credit, created_at)
+     VALUES(?,?,?,?,'active',?,?)
+     ON CONFLICT(user_id, event_id) DO UPDATE SET mode = excluded.mode, lead_days = excluded.lead_days, status = 'active',
+       wx_credit = MAX(subscriptions.wx_credit, excluded.wx_credit)`
+  ).run(uid, eventId, mode, mode === "before_event" ? leadDays : null, credit, now());
 
   return c.json({ ok: true });
 });

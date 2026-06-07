@@ -14,10 +14,36 @@ db.exec("PRAGMA foreign_keys = ON;");
 const migration = await Bun.file(join(SERVER_DIR, "migrations", "001_init.sql")).text();
 db.exec(migration);
 
-// 轻量列迁移：老库补充 users.nickname / users.avatar
-const userCols = (db.query("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
+// 轻量列迁移：老库补充 users 新列（向后兼容，网页版不受影响）
+const userInfo = db.query("PRAGMA table_info(users)").all() as { name: string; notnull: number }[];
+const userCols = userInfo.map((c) => c.name);
 if (!userCols.includes("nickname")) db.exec("ALTER TABLE users ADD COLUMN nickname TEXT");
 if (!userCols.includes("avatar")) db.exec("ALTER TABLE users ADD COLUMN avatar TEXT");
+if (!userCols.includes("openid")) db.exec("ALTER TABLE users ADD COLUMN openid TEXT");
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_openid ON users(openid) WHERE openid IS NOT NULL");
+
+// 老库 email 为 NOT NULL → 重建表使其可空（小程序用户无 email）。SQLite 不能直接去 NOT NULL。
+const emailCol = userInfo.find((c) => c.name === "email");
+if (emailCol && emailCol.notnull === 1) {
+  db.exec("PRAGMA foreign_keys = OFF");
+  db.exec(`
+    CREATE TABLE users_new (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE, openid TEXT, nickname TEXT, avatar TEXT,
+      created_at TEXT NOT NULL, last_login_at TEXT
+    );
+    INSERT INTO users_new (id, email, openid, nickname, avatar, created_at, last_login_at)
+      SELECT id, email, openid, nickname, avatar, created_at, last_login_at FROM users;
+    DROP TABLE users;
+    ALTER TABLE users_new RENAME TO users;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_openid ON users(openid) WHERE openid IS NOT NULL;
+  `);
+  db.exec("PRAGMA foreign_keys = ON");
+}
+
+// 订阅表补 wx_credit（微信一次性订阅额度）
+const subCols = (db.query("PRAGMA table_info(subscriptions)").all() as { name: string }[]).map((c) => c.name);
+if (subCols.length && !subCols.includes("wx_credit")) db.exec("ALTER TABLE subscriptions ADD COLUMN wx_credit INTEGER NOT NULL DEFAULT 0");
 
 // 用户上传头像目录
 export const AVATAR_DIR = join(DATA_DIR, "avatars");

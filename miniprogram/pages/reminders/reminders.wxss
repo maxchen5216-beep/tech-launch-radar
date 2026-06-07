@@ -1,0 +1,7 @@
+.head { font-size: 44rpx; font-weight: 800; padding: 40rpx 32rpx 20rpx; }
+.login-box { padding: 80rpx 48rpx; text-align: center; }
+.empty { text-align: center; padding: 100rpx 48rpx; font-size: 26rpx; }
+.sub-item { display: flex; align-items: center; gap: 20rpx; }
+.sub-main { flex: 1; }
+.sub-name { font-size: 30rpx; font-weight: 600; }
+.sub-meta { font-size: 22rpx; margin-top: 8rpx; }
