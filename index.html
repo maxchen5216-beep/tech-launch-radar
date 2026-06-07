@@ -411,8 +411,40 @@
   .avatar-opt.upload-tile { font-family: var(--mono); font-size: 11px; color: var(--muted); border-style: dashed; }
   .avatar-opt.upload-tile:hover { color: var(--green); border-color: var(--green); }
   .upload-tip { font-size: 11px; color: var(--faint); margin-bottom: 10px; }
+
+  /* ---- 评论 ---- */
+  .cmt-btn {
+    font-family: var(--mono); font-size: 12px; padding: 8px 14px;
+    border-radius: 7px; cursor: pointer; white-space: nowrap;
+    background: transparent; color: var(--muted); border: 1px solid var(--line-strong);
+    transition: all 0.18s;
+  }
+  .cmt-btn:hover { color: var(--ink); border-color: var(--ink); }
+  .cmt-section { margin-top: 16px; border-top: 1px dashed var(--line-strong); padding-top: 14px; }
+  .cmt-empty { color: var(--faint); font-family: var(--mono); font-size: 12px; padding: 8px 0 12px; }
+  .cmt-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .cmt-body { flex: 1; min-width: 0; }
+  .cmt-meta { display: flex; align-items: center; gap: 10px; }
+  .cmt-nick { font-size: 12.5px; font-weight: 600; }
+  .cmt-time { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .cmt-del {
+    margin-left: auto; background: none; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+  }
+  .cmt-del:hover { color: var(--coral); }
+  .cmt-text { font-size: 13.5px; color: var(--ink); margin-top: 3px; word-break: break-word; }
+  .cmt-composer { margin-top: 12px; }
+  .cmt-input {
+    width: 100%; box-sizing: border-box; background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: 8px; color: var(--ink);
+    font-family: var(--body); font-size: 13.5px; padding: 10px 12px; outline: none; resize: vertical;
+  }
+  .cmt-input:focus { border-color: var(--green); }
+  .cmt-foot { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .cmt-count { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .cmt-err { color: var(--coral); font-size: 12px; font-family: var(--mono); flex: 1; }
   /* 纯浏览版（后端不可用，如纯静态托管）：隐藏登录与提醒入口 */
-  .tlr-static #auth-slot, .tlr-static .remind-btn { display: none !important; }
+  .tlr-static #auth-slot, .tlr-static .remind-btn, .tlr-static .cmt-btn, .tlr-static .cmt-section { display: none !important; }
 </style>
 </head>
 <body>
@@ -648,6 +680,7 @@
           (live && e.live_url ? '<a class="live-link" href="' + esc(e.live_url) + '" target="_blank" rel="noopener noreferrer">' + T().watchLive + " ↗</a>" : "") +
           '<a class="src-link" href="' + esc(e.official_url) + '" target="_blank" rel="noopener noreferrer">' + T().official + "</a>" +
           '<button class="remind-btn" data-event-id="' + esc(e.id) + '" data-event-status="' + e.status + '"></button>' +
+          '<button class="cmt-btn" data-event-id="' + esc(e.id) + '">💬</button>' +
           '<details class="srcnote"><summary>' + T().srcnote + "</summary><p>" + esc(e.source_note_zh) + "</p></details>" +
         "</div>" +
       "</article>"
@@ -753,5 +786,6 @@
 </script>
 <script src="assets/auth.js"></script>
 <script src="assets/reminders.js"></script>
+<script src="assets/comments.js"></script>
 </body>
 </html>

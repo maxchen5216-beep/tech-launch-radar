@@ -57,6 +57,16 @@ CREATE TABLE IF NOT EXISTS email_log (
 );
 CREATE INDEX IF NOT EXISTS idx_email_log_dedupe ON email_log(email, type, event_id, meta);
 
+-- 评论（仅登录用户可发；敏感词在写入前拦截）
+CREATE TABLE IF NOT EXISTS comments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_id    TEXT NOT NULL,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  content     TEXT NOT NULL,
+  created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_comments_event ON comments(event_id, id DESC);
+
 -- 频率限制桶
 CREATE TABLE IF NOT EXISTS rate_limit (
   bucket_key  TEXT PRIMARY KEY,

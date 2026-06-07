@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { db, localDateStr, metaGet, metaSet, AVATAR_DIR } from "./db";
 import { authRoutes } from "./auth";
 import { subRoutes } from "./subscriptions";
+import { commentRoutes } from "./comments";
 import { syncEvents } from "./sync-events";
 import { scanReminders } from "./scan-reminders";
 import { mailDriver } from "./mail";
@@ -19,6 +20,7 @@ app.use("/api/*", cors({ origin: (o) => o || "*", allowHeaders: ["Content-Type",
 
 app.route("/api/auth", authRoutes);
 app.route("/api/subscriptions", subRoutes);
+app.route("/api/comments", commentRoutes);
 
 app.get("/api/health", (c) =>
   c.json({ ok: true, mail_driver: mailDriver(), events: (db.query("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n })
