@@ -80,9 +80,9 @@
   async function loadList(sec) {
     const list = sec.querySelector(".cmt-list");
     try {
-      const headers = {};
-      if (A().token) headers["Authorization"] = "Bearer " + A().token;
-      const res = await fetch(API + "/api/comments/" + encodeURIComponent(sec.dataset.eventId), { headers });
+      // 登录用户走 apiFetch（带 token + 统一 401 处理）；未登录用裸 fetch 读公开列表
+      const path = "/api/comments/" + encodeURIComponent(sec.dataset.eventId);
+      const res = A().loggedIn() ? await A().apiFetch(path) : await fetch(API + path);
       const j = await res.json();
       if (!j.comments || !j.comments.length) {
         list.innerHTML = '<div class="cmt-empty">' + t().empty + "</div>";

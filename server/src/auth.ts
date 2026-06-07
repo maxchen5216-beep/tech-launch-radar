@@ -32,7 +32,8 @@ async function hashCode(email: string, code: string): Promise<string> {
 }
 
 function clientIp(c: Context): string {
-  return c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "local";
+  // 优先用 nginx 设置的 x-real-ip（=$remote_addr，可信）；x-forwarded-for 客户端可伪造
+  return c.req.header("x-real-ip") || c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "local";
 }
 
 export const authRoutes = new Hono();
@@ -155,26 +156,52 @@ authRoutes.post("/me", requireAuth, async (c) => {
   return c.json({ ok: true, profile: { nickname, avatar: avatar || null } });
 });
 
-// 头像上传（multipart 字段名 file；≤1MB；png/jpg/webp）
+/** 校验图片文件头魔数（不能只信 Content-Type） */
+function sniffImage(buf: Uint8Array): "png" | "jpg" | "webp" | null {
+  if (buf.length < 12) return null;
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "png";
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
+  // RIFF....WEBP
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return "webp";
+  return null;
+}
+
+// 头像上传（multipart 字段名 file；≤1MB；png/jpg/webp，按文件头校验）
 authRoutes.post("/me/avatar", requireAuth, async (c) => {
   const uid = c.get("uid" as never) as number;
+  if (!allow(`avatar:${uid}:hour`, 10, 3600)) return c.json({ error: "rate_limited", message: "上传过于频繁，请稍后再试" }, 429);
+
   const body = await c.req.parseBody();
   const f = body.file;
   if (!(f instanceof File)) return c.json({ error: "no_file", message: "未收到文件" }, 400);
   if (f.size > 1024 * 1024) return c.json({ error: "too_large", message: "图片不能超过 1MB" }, 400);
 
-  const EXT: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
-  const ext = EXT[f.type];
-  if (!ext) return c.json({ error: "bad_type", message: "仅支持 PNG / JPG / WebP" }, 400);
+  const bytes = new Uint8Array(await f.arrayBuffer());
+  const ext = sniffImage(bytes); // 以真实文件头为准，忽略客户端声明的 Content-Type
+  if (!ext) return c.json({ error: "bad_type", message: "仅支持 PNG / JPG / WebP 图片" }, 400);
+
+  // 删除该用户的旧头像文件，避免孤儿堆积
+  const old = db.query("SELECT avatar FROM users WHERE id = ?").get(uid) as { avatar: string | null } | null;
+  if (old?.avatar?.startsWith("u:")) {
+    try { await Bun.file(join(AVATAR_DIR, old.avatar.slice(2))).delete(); } catch {}
+  }
 
   const fname = `${uid}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-  await Bun.write(join(AVATAR_DIR, fname), await f.arrayBuffer());
+  await Bun.write(join(AVATAR_DIR, fname), bytes);
   return c.json({ ok: true, avatar: `u:${fname}` });
 });
 
 // 注销账号（删除用户与全部订阅）
 authRoutes.delete("/account", requireAuth, async (c) => {
   const uid = c.get("uid" as never) as number;
+  // 删除该用户上传的头像文件（避免孤儿文件）
+  const u = db.query("SELECT avatar FROM users WHERE id = ?").get(uid) as { avatar: string | null } | null;
+  if (u?.avatar?.startsWith("u:")) {
+    try { await Bun.file(join(AVATAR_DIR, u.avatar.slice(2))).delete(); } catch {}
+  }
+  // 必须先删依赖（foreign_keys=ON，否则 DELETE users 会因评论/订阅外键约束 500）
+  db.query("DELETE FROM comments WHERE user_id = ?").run(uid);
   db.query("DELETE FROM subscriptions WHERE user_id = ?").run(uid);
   db.query("DELETE FROM users WHERE id = ?").run(uid);
   return c.json({ ok: true });

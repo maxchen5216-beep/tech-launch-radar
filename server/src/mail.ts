@@ -1,5 +1,5 @@
 import { createHmac, randomUUID } from "node:crypto";
-import { db, now } from "./db";
+import { db, now, localDayStartISO } from "./db";
 
 /**
  * 邮件发送抽象层。
@@ -44,12 +44,12 @@ export function alreadySent(msg: Pick<MailMessage, "to" | "type" | "eventId" | "
   return !!row;
 }
 
-/** 当日已发送总量（成本闸） */
+/** 当日已发送总量（成本闸）。以本地日零点的 UTC 时刻为界，与 created_at(UTC ISO) 一致比较 */
 export function sentToday(type?: MailType): number {
-  const today = new Date().toISOString().slice(0, 10);
+  const dayStart = localDayStartISO();
   const row = type
-    ? (db.query("SELECT COUNT(*) AS n FROM email_log WHERE type = ? AND created_at >= ? AND status != 'failed'").get(type, today) as { n: number })
-    : (db.query("SELECT COUNT(*) AS n FROM email_log WHERE created_at >= ? AND status != 'failed'").get(today) as { n: number });
+    ? (db.query("SELECT COUNT(*) AS n FROM email_log WHERE type = ? AND created_at >= ? AND status != 'failed'").get(type, dayStart) as { n: number })
+    : (db.query("SELECT COUNT(*) AS n FROM email_log WHERE created_at >= ? AND status != 'failed'").get(dayStart) as { n: number });
   return row.n;
 }
 

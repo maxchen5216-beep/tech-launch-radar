@@ -1,4 +1,4 @@
-import { db, localDateStr } from "./db";
+import { db, localDateStr, localDayStartISO } from "./db";
 import { sendMail, alreadySent, sentToday } from "./mail";
 
 // 成本闸：全局每日提醒上限 / 单用户每日提醒上限
@@ -55,8 +55,8 @@ export async function scanReminders(today: string = localDateStr()): Promise<{ c
       break;
     }
     const userToday = db
-      .query("SELECT COUNT(*) AS n FROM email_log WHERE email = ? AND type = 'reminder' AND created_at >= ?")
-      .get(r.email, today) as { n: number };
+      .query("SELECT COUNT(*) AS n FROM email_log WHERE email = ? AND type = 'reminder' AND created_at >= ? AND status != 'failed'")
+      .get(r.email, localDayStartISO()) as { n: number };
     if (userToday.n >= DAILY_PER_USER_CAP) { skipped++; continue; }
 
     await sendMail(msg);

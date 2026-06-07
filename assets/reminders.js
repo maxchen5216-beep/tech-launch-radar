@@ -1,8 +1,13 @@
 /* 提醒订阅模块：confirmed 事件 → 开始前 1/3/7 天提醒；expected/rumored → 官宣后通知。
- * 依赖 assets/auth.js（window.TLR_AUTH）。邮件推送未上线：所有提醒仅在后端记录。 */
+ * 依赖 assets/auth.js（window.TLR_AUTH）。 */
 (function () {
+  const API = window.API_BASE || "";
   const $ = (s, r) => (r || document).querySelector(s);
   const A = () => window.TLR_AUTH;
+
+  // 仅当后端为 mock 驱动（邮件未真实发送）时才显示"未上线"提示；生产 directmail 下隐藏
+  let mockMode = false;
+  fetch(API + "/api/health").then((r) => r.json()).then((j) => { mockMode = j.mail_driver === "mock"; }).catch(() => {});
 
   const I = {
     zh: {
@@ -13,7 +18,7 @@
       drawerTitle: "我的提醒", empty: "还没有订阅任何提醒", cancel: "取消",
       modeBefore: (d) => "开始前 " + d + " 天提醒", modeAnnounce: "官宣后通知",
       fired: "已通知", close: "关闭",
-      notice: "ⓘ 邮件推送功能尚未上线：当前订阅会被记录，提醒触发时暂不会真正发送邮件。",
+      notice: "ⓘ 当前为开发模式，提醒不会真正发送邮件。",
     },
     en: {
       remind: "🔔 Remind me", watch: "📌 Watch for date",
@@ -23,7 +28,7 @@
       drawerTitle: "My reminders", empty: "No reminders yet", cancel: "Cancel",
       modeBefore: (d) => d + " days before", modeAnnounce: "Notify on announcement",
       fired: "Notified", close: "Close",
-      notice: "ⓘ Email delivery is not live yet: subscriptions are recorded, but no real email will be sent when reminders fire.",
+      notice: "ⓘ Dev mode: reminders are recorded but no real email is sent.",
     },
   };
   const t = () => I[A().lang()];
@@ -98,7 +103,7 @@
           '<button class="auth-btn primary" data-d="3">' + L.d3 + "</button>" +
           '<button class="auth-btn primary" data-d="7">' + L.d7 + "</button>" +
         "</div>" +
-        '<div class="modal-agree">' + L.notice + "</div>" +
+        (mockMode ? '<div class="modal-agree">' + L.notice + "</div>" : "") +
       "</div>";
     document.body.appendChild(ov);
     const close = () => ov.remove();
@@ -134,7 +139,7 @@
     if (!drawer) return;
     const L = t();
     $(".drawer-head span", drawer).textContent = L.drawerTitle + " (" + subs.size + ")";
-    $(".drawer-note", drawer).textContent = L.notice;
+    $(".drawer-note", drawer).textContent = mockMode ? L.notice : "";
     const body = $(".drawer-body", drawer);
     if (!subs.size) { body.innerHTML = '<div class="drawer-empty">' + L.empty + "</div>"; return; }
     const zh = A().lang() === "zh";

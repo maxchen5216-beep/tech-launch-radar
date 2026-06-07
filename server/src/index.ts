@@ -12,11 +12,29 @@ import { mailDriver } from "./mail";
 const PORT = Number(process.env.PORT || 8787);
 const INTERNAL_KEY = process.env.INTERNAL_KEY || "dev-internal-key";
 const PROJECT_ROOT = join(import.meta.dir, "..", "..");
+const IS_PROD = mailDriver() !== "mock"; // 真实邮件驱动 = 生产环境
+
+// 生产环境硬保护：默认密钥/缺失密钥直接拒绝启动，避免 /internal 接口被任意调用
+if (IS_PROD) {
+  if (INTERNAL_KEY === "dev-internal-key") { console.error("❌ 生产环境必须设置 INTERNAL_KEY（当前为默认值）"); process.exit(1); }
+  if (!process.env.JWT_SECRET) { console.error("❌ 生产环境必须显式设置 JWT_SECRET"); process.exit(1); }
+}
+
+// 允许的前端来源（生产同源托管，无需跨域；CORS_ORIGINS 可补充逗号分隔白名单）
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
 
 const app = new Hono();
 
-// CORS：开发期放开（页面可能从 file:// 打开，origin 为 null）
-app.use("/api/*", cors({ origin: (o) => o || "*", allowHeaders: ["Content-Type", "Authorization"], allowMethods: ["GET", "POST", "DELETE", "OPTIONS"] }));
+// CORS：生产仅放行白名单；开发(mock)放开以便 file:// 调试
+app.use("/api/*", cors({
+  origin: (o) => {
+    if (!IS_PROD) return o || "*";                  // 开发：放开
+    if (!o) return "";                              // 生产：同源请求无 Origin 头，浏览器不校验
+    return ALLOWED_ORIGINS.includes(o) ? o : "";    // 生产：仅白名单
+  },
+  allowHeaders: ["Content-Type", "Authorization"],
+  allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
+}));
 
 app.route("/api/auth", authRoutes);
 app.route("/api/subscriptions", subRoutes);
@@ -29,8 +47,12 @@ app.get("/api/health", (c) =>
 // 内部接口：数据更新流程结束后调用，立即同步事件并检测官宣
 app.post("/internal/sync-events", async (c) => {
   if (c.req.header("x-internal-key") !== INTERNAL_KEY) return c.json({ error: "forbidden" }, 403);
-  const result = await syncEvents();
-  return c.json({ ok: true, ...result });
+  try {
+    const result = await syncEvents();
+    return c.json({ ok: true, ...result });
+  } catch (err) {
+    return c.json({ ok: false, error: "sync_failed", message: err instanceof Error ? err.message : String(err) }, 422);
+  }
 });
 
 // 内部接口：手动触发提醒扫描（QA/调试用，可传 ?today=YYYY-MM-DD 模拟日期）
@@ -53,6 +75,7 @@ async function serveFile(rel: string) {
 }
 app.get("/", () => serveFile("index.html"));
 app.get("/index.html", () => serveFile("index.html"));
+app.get("/privacy.html", () => serveFile("privacy.html"));
 app.get("/data/:file", (c) => serveFile(`data/${c.req.param("file").replace(/[^\w.-]/g, "")}`));
 app.get("/assets/:file", (c) => serveFile(`assets/${c.req.param("file").replace(/[^\w.-]/g, "")}`));
 
@@ -63,7 +86,14 @@ app.get("/avatars/:file", async (c) => {
   if (!(await f.exists())) return new Response("not found", { status: 404 });
   const ext = name.slice(name.lastIndexOf(".") + 1);
   const type = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
-  return new Response(f, { headers: { "content-type": type, "cache-control": "public, max-age=86400" } });
+  return new Response(f, {
+    headers: {
+      "content-type": type,
+      "cache-control": "public, max-age=86400",
+      "x-content-type-options": "nosniff",
+      "content-disposition": "inline",
+    },
+  });
 });
 
 // ---- 每日定时任务（每小时检查一次，按日期守卫保证每天只跑一次）----

@@ -36,6 +36,15 @@ export function localDateStr(d: Date = new Date()): string {
   );
 }
 
+/**
+ * 当前本地日「零点」对应的 UTC ISO 时刻。
+ * 用于与 created_at（UTC ISO）做「今天以来」的比较——无论服务器时区如何都正确，
+ * 修复 localDateStr(本地) 与 created_at(UTC) 直接字符串比较的 8 小时错位。
+ */
+export function localDayStartISO(d: Date = new Date()): string {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0).toISOString();
+}
+
 export function metaGet(key: string): string | null {
   const row = db.query("SELECT value FROM meta WHERE key = ?").get(key) as { value: string } | null;
   return row?.value ?? null;

@@ -27,7 +27,15 @@ async function loadEventsFromFile(): Promise<EventRow[]> {
  * 同步事件到数据库，并检测「expected/rumored → confirmed」官宣升级，
  * 对 on_announce 订阅者发送官宣通知（mock 驱动下仅记录，不真实发送）。
  */
-export async function syncEvents(): Promise<{ synced: number; announced: string[] }> {
+// 串行化：cron 首跑与手动 /internal/sync-events 并发时，避免官宣检测重复触发
+let inFlight: Promise<{ synced: number; announced: string[] }> | null = null;
+export function syncEvents() {
+  if (inFlight) return inFlight;
+  inFlight = doSync().finally(() => { inFlight = null; });
+  return inFlight;
+}
+
+async function doSync(): Promise<{ synced: number; announced: string[] }> {
   const events = await loadEventsFromFile();
   const announced: string[] = [];
 

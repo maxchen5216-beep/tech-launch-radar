@@ -22,7 +22,9 @@
       title: "邮箱验证码 · 登录 / 注册", emailPh: "输入邮箱", codePh: "6位验证码",
       send: "获取验证码", resend: "重新获取", verify: "继续",
       devHint: "开发模式：邮件推送未上线，验证码已自动填入 →",
-      agree: "继续即代表同意将邮箱用于接收你订阅的发布会提醒",
+      agree: '继续即代表同意将邮箱用于接收订阅提醒，并已阅读 <a href="privacy.html" target="_blank">隐私政策</a>',
+      noMail: "没收到？请检查垃圾邮件箱，或 60 秒后重发",
+      delAccount: "注销账号", delConfirm: "确定注销账号？将永久删除你的邮箱、资料、订阅与全部评论，且不可恢复。",
       netErr: "网络错误，请稍后再试",
       profileTitleNew: "欢迎！完善你的资料", profileTitleEdit: "编辑资料",
       nickPh: "用户名（1-20字符）", chooseAvatar: "选择头像", uploadTile: "＋ 上传",
@@ -34,7 +36,9 @@
       title: "Email code · Sign in / up", emailPh: "Email address", codePh: "6-digit code",
       send: "Send code", resend: "Resend", verify: "Continue",
       devHint: "Dev mode: email delivery not live — code auto-filled →",
-      agree: "By continuing you agree to receive event reminders at this email",
+      agree: 'By continuing you agree to receive reminders at this email and have read our <a href="privacy.html" target="_blank">Privacy Policy</a>',
+      noMail: "Didn't get it? Check your spam folder, or resend in 60s",
+      delAccount: "Delete account", delConfirm: "Delete your account? This permanently removes your email, profile, subscriptions and all comments. This cannot be undone.",
       netErr: "Network error, please retry",
       profileTitleNew: "Welcome! Set up your profile", profileTitleEdit: "Edit profile",
       nickPh: "Username (1-20 chars)", chooseAvatar: "Pick an avatar", uploadTile: "＋ Upload",
@@ -45,11 +49,13 @@
   const lang = () => localStorage.getItem("tlr-lang") || "zh";
   const t = (k) => I[lang()][k];
 
+  function safeParse(s) { try { return JSON.parse(s); } catch { return null; } }
   const state = {
     token: localStorage.getItem("tlr-token") || null,
     email: localStorage.getItem("tlr-email") || null,
-    profile: JSON.parse(localStorage.getItem("tlr-profile") || "null"),
+    profile: safeParse(localStorage.getItem("tlr-profile")),
   };
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   async function apiFetch(path, opts = {}) {
     opts.headers = Object.assign({}, opts.headers || {});
@@ -85,7 +91,7 @@
   // ---- 头像渲染 ----
   function avatarHTML(avatar, cls) {
     if (avatar && avatar.startsWith("u:")) {
-      return '<img class="avatar ' + (cls || "") + '" src="' + API + "/avatars/" + avatar.slice(2) + '" alt="">';
+      return '<img class="avatar ' + (cls || "") + '" src="' + API + "/avatars/" + esc(avatar.slice(2)) + '" alt="">';
     }
     const idx = avatar && avatar.startsWith("p:") ? parseInt(avatar.slice(2), 10) % PRESETS.length : 0;
     const p = PRESETS[isNaN(idx) ? 0 : idx];
@@ -102,7 +108,7 @@
       slot.innerHTML =
         '<button class="user-chip" id="btn-profile" title="' + t("editProfile") + '">' +
           avatarHTML(state.profile && state.profile.avatar, "sm") +
-          '<span class="auth-email">' + short + "</span>" +
+          '<span class="auth-email">' + esc(short) + "</span>" +
         "</button>" +
         '<button class="auth-btn primary" id="btn-my-reminders">' + t("myReminders") + "</button>" +
         '<button class="auth-btn ghost" id="btn-logout">' + t("logout") + "</button>";
@@ -154,6 +160,8 @@
           $("#li-code").value = j.dev_code;
           const d = $("#li-dev"); d.hidden = false;
           d.textContent = t("devHint") + " " + j.dev_code;
+        } else {
+          const d = $("#li-dev"); d.hidden = false; d.textContent = t("noMail"); // 真实邮件：提示查收/垃圾箱
         }
         cd = 60;
         timer = setInterval(() => {
@@ -202,11 +210,20 @@
         '<input id="pf-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>' +
         '<div class="modal-err" id="pf-err"></div>' +
         '<button class="auth-btn primary block" id="pf-save">' + t("save") + "</button>" +
+        (isNew ? "" : '<button class="del-account" id="pf-del">' + t("delAccount") + "</button>") +
       "</div>";
     document.body.appendChild(overlay);
     if (!isNew) {
       overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
       $(".modal-close", overlay).onclick = closeOverlay;
+      $("#pf-del").onclick = async () => {
+        if (!confirm(t("delConfirm"))) return;
+        try {
+          await apiFetch("/api/auth/account", { method: "DELETE" });
+          closeOverlay();
+          logout();
+        } catch { err(t("netErr")); }
+      };
     }
 
     const err = (m) => { $("#pf-err").textContent = m || ""; };

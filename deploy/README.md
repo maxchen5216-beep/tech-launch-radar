@@ -28,9 +28,9 @@ bash /opt/tlr/deploy/setup.sh
 ### 第 3 步：填 DirectMail 密钥（服务器上）
 
 ```bash
-nano /opt/tlr/server/.env     # 填 ALIYUN_AK= 和 ALIYUN_SK=
+nano /opt/tlr/server/.env     # 填 ALIYUN_AK= / ALIYUN_SK= / ADMIN_EMAILS=（你的登录邮箱，用于删违规评论）
 systemctl restart tlr
-curl -s http://127.0.0.1:8787/api/health   # 应输出 mail_driver":"directmail","events":49
+curl -s http://127.0.0.1:8787/api/health   # mail_driver 应为 directmail，events 为正整数（约 49）
 ```
 
 ### 第 4 步：备案前测试（SSH 隧道）

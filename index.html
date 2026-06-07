@@ -324,6 +324,14 @@
   }
   .modal-err { color: var(--coral); font-size: 12.5px; min-height: 18px; font-family: var(--mono); }
   .modal-agree { color: var(--faint); font-size: 11.5px; margin-top: 14px; line-height: 1.5; }
+  .modal-agree a { color: var(--muted); text-decoration: underline; }
+  .modal-agree a:hover { color: var(--green); }
+  .del-account {
+    display: block; width: 100%; margin-top: 14px; padding: 9px;
+    background: transparent; border: 1px solid rgba(255,122,107,0.3); border-radius: 8px;
+    color: var(--coral); font-family: var(--mono); font-size: 12px; cursor: pointer; transition: all 0.18s;
+  }
+  .del-account:hover { background: var(--coral-dim); border-color: var(--coral); }
   .lead-row { display: flex; gap: 10px; }
   .lead-row .auth-btn { flex: 1; padding: 11px 6px; }
 
@@ -516,15 +524,26 @@
   <footer>
     <div class="updated"><span class="dot"></span><span id="updated-line"></span></div>
     <p class="method" data-i18n="method">校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。</p>
-    <p style="margin-top:14px">
-      <!-- ICP 备案通过后：去掉 hidden 属性，并把占位替换为真实备案号 -->
+    <p style="margin-top:14px; display:flex; gap:18px; flex-wrap:wrap; align-items:center">
+      <a href="privacy.html" style="color:var(--muted);text-decoration:none;font-size:12px" data-i18n="privacyLink">隐私政策</a>
+      <!-- ICP 备案通过后：去掉 hidden，把占位替换为真实备案号 -->
       <a id="icp-link" hidden href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color:var(--faint);text-decoration:none;font-size:12px">浙ICP备XXXXXXXX号</a>
+      <!-- 公安备案通过后：去掉 hidden，替换为真实编号 -->
+      <a id="police-beian" hidden href="https://beian.mps.gov.cn/" target="_blank" rel="noopener noreferrer" style="color:var(--faint);text-decoration:none;font-size:12px">浙公网安备 XXXXXXXX 号</a>
     </p>
   </footer>
 
 </div>
 
 <script src="data/events-data.js"></script>
+<script>
+  // 后端 API 地址：file:// 打开时指向本地服务；由后端同源托管时留空
+  window.API_BASE = location.protocol === "file:" ? "http://localhost:8787" : "";
+</script>
+<!-- 模块脚本先于下方主渲染脚本加载，确保 renderAll 首次执行时 TLR_AFTER_RENDER/AFTER_ALL 钩子已注册 -->
+<script src="assets/auth.js"></script>
+<script src="assets/reminders.js"></script>
+<script src="assets/comments.js"></script>
 <script>
 (function () {
   const DATA = window.EVENTS_DATA || { events: [], updated: "" };
@@ -549,7 +568,7 @@
       lg_e: "预计 — 官方未定档，按历史规律推断的模糊时间",
       lg_r: "传闻 — 来自媒体/供应链泄露，待官方确认",
       method: "校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。",
-      updated: "数据更新于",
+      updated: "数据更新于", privacyLink: "隐私政策",
       cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技" },
       months: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
       monthFmt: (y, m) => y + "年" + I18N.zh.months[m]
@@ -571,7 +590,7 @@
       lg_e: "Expected — no official date yet; fuzzy window inferred from historical cadence",
       lg_r: "Rumored — based on media / supply-chain leaks, pending official confirmation",
       method: "Methodology: every entry is cross-checked via web search against official sources (event pages, press releases, official social accounts) before inclusion. 'Expected' and 'Rumored' entries are unconfirmed inferences — official announcements prevail. Data is re-verified and refreshed by a scheduled job.",
-      updated: "Data updated",
+      updated: "Data updated", privacyLink: "Privacy Policy",
       cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier" },
       monthFmt: (y, m) => ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][m] + " " + y
     }
@@ -780,12 +799,5 @@
   renderAll();
 })();
 </script>
-<script>
-  // 后端 API 地址：file:// 打开时指向本地服务；由后端同源托管时留空
-  window.API_BASE = location.protocol === "file:" ? "http://localhost:8787" : "";
-</script>
-<script src="assets/auth.js"></script>
-<script src="assets/reminders.js"></script>
-<script src="assets/comments.js"></script>
 </body>
 </html>

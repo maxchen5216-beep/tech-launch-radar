@@ -52,6 +52,10 @@ MAIL_FROM_ALIAS=科技圈发布会雷达
 JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '=+/')
 INTERNAL_KEY=$(head -c 24 /dev/urandom | base64 | tr -d '=+/')
 REMINDER_DAILY_CAP=180
+# 允许的前端跨域来源（逗号分隔）。同源访问无需填；如用独立前端域名再加
+CORS_ORIGINS=https://nextlaunch.cn,https://www.nextlaunch.cn
+# 管理员邮箱（逗号分隔）：可删除任何用户的评论。请填你登录用的邮箱
+ADMIN_EMAILS=
 EOF
   chown "$APP_USER:$APP_USER" "$APP_DIR/server/.env"
   chmod 600 "$APP_DIR/server/.env"
