@@ -27,8 +27,11 @@
 
 8. **触发提醒系统同步**：数据重写完成后，如本地后端在运行，调用：
    `curl -s -X POST http://localhost:8787/internal/sync-events -H "x-internal-key: dev-internal-key"`
-   这会把最新事件落库，并检测 expected/rumored → confirmed 的官宣升级，
-   为「关注官宣」订阅者生成通知（当前邮件推送未上线，仅记录到 email_log）。
+   这会把最新事件落库，并：
+   - 检测 expected/rumored → confirmed 的官宣升级，为「关注官宣」订阅者发送通知；
+   - **自动清理孤儿**：若本次从 data 文件移除了某事件，会连带删除该事件在数据库中的
+     评论、订阅与事件行（用户的「我的提醒」里不会再残留已删除事件）。
+   返回 JSON 含 `removed` 数组，列出被清理的 event_id。
 
 ## 条目 schema
 

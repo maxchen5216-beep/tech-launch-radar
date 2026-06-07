@@ -28,14 +28,14 @@ async function loadEventsFromFile(): Promise<EventRow[]> {
  * 对 on_announce 订阅者发送官宣通知（mock 驱动下仅记录，不真实发送）。
  */
 // 串行化：cron 首跑与手动 /internal/sync-events 并发时，避免官宣检测重复触发
-let inFlight: Promise<{ synced: number; announced: string[] }> | null = null;
+let inFlight: Promise<{ synced: number; announced: string[]; removed: string[] }> | null = null;
 export function syncEvents() {
   if (inFlight) return inFlight;
   inFlight = doSync().finally(() => { inFlight = null; });
   return inFlight;
 }
 
-async function doSync(): Promise<{ synced: number; announced: string[] }> {
+async function doSync(): Promise<{ synced: number; announced: string[]; removed: string[] }> {
   const events = await loadEventsFromFile();
   const announced: string[] = [];
 
@@ -79,5 +79,15 @@ async function doSync(): Promise<{ synced: number; announced: string[] }> {
     }
   }
 
-  return { synced: events.length, announced };
+  // 清理孤儿：data 文件中已移除的事件，连带删除其评论/订阅与事件行
+  const keep = new Set(events.map((e) => e.id));
+  const dbIds = (db.query("SELECT id FROM events").all() as { id: string }[]).map((r) => r.id);
+  const removed = dbIds.filter((id) => !keep.has(id));
+  for (const id of removed) {
+    db.query("DELETE FROM comments WHERE event_id = ?").run(id);
+    db.query("DELETE FROM subscriptions WHERE event_id = ?").run(id);
+    db.query("DELETE FROM events WHERE id = ?").run(id);
+  }
+
+  return { synced: events.length, announced, removed };
 }

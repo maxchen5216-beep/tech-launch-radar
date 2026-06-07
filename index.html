@@ -62,7 +62,8 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 20px 0; border-bottom: 1px solid var(--line);
   }
-  .brand { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+  .brand { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: var(--muted); letter-spacing: 0.08em; white-space: nowrap; flex: none; }
+  .brand .dot { flex: none; }
   .brand .dot {
     width: 9px; height: 9px; border-radius: 50%; background: var(--green);
     box-shadow: 0 0 12px var(--green);
@@ -392,6 +393,14 @@
     color: var(--faint); font-size: 11.5px; line-height: 1.5;
   }
   @media (max-width: 640px) { .auth-email { display: none; } }
+  /* 移动端 header：隐藏文字品牌（保留脉冲点作极简标识，hero 大标题已承载品牌），收紧按钮避免横向溢出 */
+  @media (max-width: 600px) {
+    .brand span:not(.dot) { display: none; }
+    .header-right { gap: 8px; }
+    #auth-slot { gap: 6px; }
+    .auth-btn, .user-chip { padding: 6px 10px; font-size: 11px; }
+    .lang-toggle button { padding: 6px 11px; }
+  }
 
   /* ---- 头像与资料 ---- */
   .avatar {
@@ -461,7 +470,7 @@
   <header>
     <div class="brand">
       <span class="dot"></span>
-      <span data-i18n="brand">THE NEXT LAUNCH · 下一场发布会</span>
+      <span data-i18n="brand">下一场发布会</span>
     </div>
     <div class="header-right">
       <div id="auth-slot"></div>
@@ -552,7 +561,7 @@
   // ---------- i18n ----------
   const I18N = {
     zh: {
-      brand: "THE NEXT LAUNCH · 下一场发布会",
+      brand: "下一场发布会",
       eyebrow: "科技前沿 · 一手掌握",
       title: "下一场发布会",
       subtitle: "THE NEXT LAUNCH — UPCOMING KEYNOTES, EXPOS & REVEALS",

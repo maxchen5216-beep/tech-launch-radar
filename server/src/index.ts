@@ -103,7 +103,7 @@ async function cronTick() {
     if (metaGet("last_sync_date") !== today) {
       const r = await syncEvents();
       metaSet("last_sync_date", today);
-      console.log(`[cron] sync-events: ${r.synced} 个事件已同步, 官宣 ${r.announced.length} 个`);
+      console.log(`[cron] sync-events: ${r.synced} 个事件已同步, 官宣 ${r.announced.length} 个, 清理孤儿 ${r.removed.length} 个`);
     }
     if (metaGet("last_scan_date") !== today) {
       const r = await scanReminders(today);
