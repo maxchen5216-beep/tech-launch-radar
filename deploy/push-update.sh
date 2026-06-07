@@ -13,6 +13,7 @@ echo "==> 同步代码到 $SERVER:/opt/tlr/"
 rsync -avz --delete \
   --exclude .git --exclude .gstack --exclude .claude --exclude .DS_Store \
   --exclude server/node_modules --exclude server/.data --exclude server/.env \
+  --exclude server/package-lock.json \
   "$LOCAL_DIR/" "$SERVER:/opt/tlr/"
 
 echo "==> 重启服务并触发事件同步（官宣检测）"
