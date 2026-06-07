@@ -97,8 +97,9 @@ async function sendViaDirectMail(msg: MailMessage): Promise<void> {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
+  // 成功响应为 {EnvId, RequestId}；失败响应带 Code/Message 错误码
   const json: any = await res.json().catch(() => ({}));
-  if (!res.ok || !json.EnvelopeId) {
+  if (!res.ok || json.Code) {
     throw new Error(`DirectMail 发送失败: ${json.Code || res.status} ${json.Message || ""}`.trim());
   }
 }
