@@ -1,35 +1,42 @@
 #!/usr/bin/env bash
 # ============================================================
-# 科技圈发布会雷达 · 服务器初始化脚本（阿里云轻量服务器，Ubuntu 22.04 / Debian 12）
-# 用 root 执行：bash setup.sh
-# 幂等：重复执行安全。
+# 科技圈发布会雷达 · 服务器初始化脚本（国内服务器友好版）
+# 不依赖 GitHub/海外源：Bun 经 npmmirror 安装，反代用 Ubuntu 源里的 nginx。
+# 前置：代码已通过 rsync 从本地电脑上传到 /opt/tlr（见 deploy/README.md）
+# 用 root 执行：bash /opt/tlr/deploy/setup.sh   （幂等，可重复执行）
 # ============================================================
 set -euo pipefail
 
-REPO_URL="https://github.com/maxchen5216-beep/tech-launch-radar.git"
 APP_DIR="/opt/tlr"
 APP_USER="tlr"
+NPM_REG="https://registry.npmmirror.com"
 
-echo "==> [1/7] 安装基础依赖"
+[ -f "$APP_DIR/server/package.json" ] || {
+  echo "❌ 未找到 $APP_DIR/server/package.json"
+  echo "   请先在本地电脑执行 rsync 上传代码（见 deploy/README.md「上传代码」一节）"
+  exit 1
+}
+
+echo "==> [1/7] 安装基础依赖（阿里云 Ubuntu 镜像源，速度快）"
 apt-get update -qq
-apt-get install -y -qq curl unzip git sqlite3 ca-certificates debian-keyring debian-archive-keyring apt-transport-https gnupg
+apt-get install -y -qq curl unzip rsync git sqlite3 nginx nodejs npm
 
 echo "==> [2/7] 创建运行用户 ${APP_USER}"
 id -u "$APP_USER" &>/dev/null || useradd -r -m -s /bin/bash "$APP_USER"
 
-echo "==> [3/7] 安装 Bun（${APP_USER} 用户）"
-if ! sudo -u "$APP_USER" test -x "/home/$APP_USER/.bun/bin/bun"; then
-  sudo -u "$APP_USER" bash -c 'curl -fsSL https://bun.sh/install | bash'
+echo "==> [3/7] 安装 Bun（经 npmmirror 国内镜像，约 1-2 分钟）"
+if ! command -v bun &>/dev/null; then
+  npm install -g bun --registry="$NPM_REG"
 fi
+# systemd 单元里用固定路径 /home/tlr/.bun/bin/bun，做个符号链接对齐
+mkdir -p "/home/$APP_USER/.bun/bin"
+ln -sf "$(command -v bun)" "/home/$APP_USER/.bun/bin/bun"
+chown -R "$APP_USER:$APP_USER" "/home/$APP_USER/.bun"
+echo "    bun $(bun --version)"
 
-echo "==> [4/7] 拉取代码到 ${APP_DIR}"
-if [ ! -d "$APP_DIR/.git" ]; then
-  git clone "$REPO_URL" "$APP_DIR"
-else
-  git -C "$APP_DIR" pull --ff-only
-fi
+echo "==> [4/7] 安装后端依赖（npmmirror）"
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
-sudo -u "$APP_USER" bash -c "cd $APP_DIR/server && /home/$APP_USER/.bun/bin/bun install"
+sudo -u "$APP_USER" bash -c "cd $APP_DIR/server && npm install --registry=$NPM_REG --omit=dev --no-audit --no-fund"
 
 echo "==> [5/7] 生成生产配置 ${APP_DIR}/server/.env（已存在则跳过）"
 if [ ! -f "$APP_DIR/server/.env" ]; then
@@ -44,7 +51,7 @@ MAIL_FROM_ALIAS=科技圈发布会雷达
 # 随机生成的生产密钥（请勿外泄）
 JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '=+/')
 INTERNAL_KEY=$(head -c 24 /dev/urandom | base64 | tr -d '=+/')
-REMINDER_DAILY_CAP=500
+REMINDER_DAILY_CAP=180
 EOF
   chown "$APP_USER:$APP_USER" "$APP_DIR/server/.env"
   chmod 600 "$APP_DIR/server/.env"
@@ -57,24 +64,21 @@ systemctl daemon-reload
 systemctl enable tlr
 systemctl restart tlr
 
-echo "==> [7/7] 安装 Caddy（反向代理 + 自动 HTTPS）"
-if ! command -v caddy &>/dev/null; then
-  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
-  apt-get update -qq && apt-get install -y -qq caddy
-fi
-cp "$APP_DIR/deploy/Caddyfile" /etc/caddy/Caddyfile
-systemctl reload caddy || systemctl restart caddy
+echo "==> [7/7] 配置 nginx 反向代理（80 端口）"
+cp "$APP_DIR/deploy/nginx-tlr.conf" /etc/nginx/sites-available/tlr
+ln -sf /etc/nginx/sites-available/tlr /etc/nginx/sites-enabled/tlr
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl enable nginx && systemctl reload nginx
 
 echo "==> 配置每日数据库备份（凌晨4点，保留30天）"
-chmod +x "$APP_DIR/deploy/backup.sh" "$APP_DIR/deploy/update-data.sh"
+chmod +x "$APP_DIR/deploy/backup.sh"
 cat > /etc/cron.d/tlr-backup <<EOF
 0 4 * * * $APP_USER $APP_DIR/deploy/backup.sh >> /var/log/tlr-backup.log 2>&1
 EOF
 
 echo ""
 echo "✅ 初始化完成。后续步骤："
-echo "   1. 编辑 $APP_DIR/server/.env 填入 DirectMail 的 AK/SK，然后 systemctl restart tlr"
-echo "   2. 备案前：浏览器访问 http://<服务器IP> 测试（Caddyfile 默认 IP 模式）"
-echo "   3. 备案通过后：编辑 /etc/caddy/Caddyfile 切换到域名模式，systemctl reload caddy"
-echo "   状态检查：systemctl status tlr / journalctl -u tlr -f"
+echo "   1. nano $APP_DIR/server/.env 填入 DirectMail 的 ALIYUN_AK/SK，然后 systemctl restart tlr"
+echo "   2. 备案前：浏览器访问 http://<服务器IP> 测试"
+echo "   3. 备案通过后：apt install -y python3-certbot-nginx && certbot --nginx -d nextlaunch.cn（自动上 HTTPS）"
+echo "   状态：systemctl status tlr · 日志：journalctl -u tlr -f"

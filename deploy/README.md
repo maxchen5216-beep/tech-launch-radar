@@ -1,86 +1,80 @@
-# 阿里云国内服务器部署手册（nextlaunch.cn）
+# 阿里云国内服务器部署手册（nextlaunch.cn · 121.40.54.69）
 
 > 完整版部署：静态页 + 后端（登录/提醒）+ DirectMail 真实邮件。
-> 关键路径是 ICP 备案（7-20 个工作日），其余都可以在备案等待期内完成。
+> **国内服务器访问不了 GitHub**，所以代码从本地 Mac 用 rsync 直推；Bun 走 npmmirror 国内镜像；反代用 nginx（Ubuntu 官方源）。
 
-## 你的准备清单（按顺序）
+## 部署流程
 
-### 第 0 天，三件事并行启动
-
-**① 购买轻量应用服务器**（阿里云控制台 → 轻量应用服务器）
-- 地域：国内（杭州/上海等）；镜像：**Ubuntu 22.04**；规格：2核2G 起步
-- **时长买 1 年**（备案要求服务器剩余时长 ≥3 个月）
-- 买完记下：公网 IP、root 密码（或设置密钥）
-
-**② 提交 ICP 备案**（阿里云控制台 → ICP 备案）
-- 个人主体；关联刚买的服务器；域名 nextlaunch.cn
-- 资料：身份证正反面、本人手机号
-- 网站名称用**个人化、非经营性**的名字（如「麦琛的科技日历」），不要带行业/公司字样；服务内容选"个人空间/其他"
-- 阿里云 APP 人脸核验后提交；管局电话回访时如实说"个人网站，展示科技活动日历"
-- ⚠️ 备案通过前，域名**不能**解析到服务器；测试用 IP 访问（合规）
-
-**③ 配置发信域名**（阿里云控制台 → 邮件推送 DirectMail，不受备案限制）
-1. 发信域名 → 新建 `mail.nextlaunch.cn` → 按页面提示去"云解析 DNS"加 4 条记录（SPF/MX/CNAME/TXT）→ 回来点验证
-2. 发信地址 → 新建 `noreply@mail.nextlaunch.cn`，类型选**触发邮件**
-3. RAM 访问控制 → 创建子用户（勾选 OpenAPI 调用）→ 授权 `AliyunDirectMailFullAccess` → 记下 AccessKey ID / Secret
-
-### 服务器初始化（买好服务器就能做）
+### 第 1 步：上传代码（在本地 Mac 终端执行）
 
 ```bash
-# 1. SSH 登录服务器
-ssh root@<服务器IP>
-
-# 2. 一键初始化（安装 Bun/Caddy、拉代码、配 systemd 自启、备份 cron）
-apt-get update && apt-get install -y git   # 新系统先装 git
-git clone https://github.com/maxchen5216-beep/tech-launch-radar.git /opt/tlr
-bash /opt/tlr/deploy/setup.sh
-
-# 3. 填入 DirectMail 密钥
-nano /opt/tlr/server/.env     # 填 ALIYUN_AK= 和 ALIYUN_SK= 两行
-systemctl restart tlr
-
-# 4. 验证
-systemctl status tlr          # 应为 active (running)
-curl http://127.0.0.1:8787/api/health   # mail_driver 应为 directmail
+cd /Users/maxchen/Desktop/fahui/00006
+rsync -avz --exclude .git --exclude .gstack --exclude .claude \
+  --exclude server/node_modules --exclude server/.data \
+  ./ root@121.40.54.69:/opt/tlr/
 ```
 
-阿里云控制台 → 服务器防火墙：放行 **80、443**（22 默认已开，建议限制来源 IP）。
+（输入服务器 root 密码；以后每次更新代码/数据都用 `bash deploy/push-update.sh` 一键完成）
 
-### 备案前测试（IP 模式，Caddyfile 默认就是）
-
-浏览器打开 `http://<服务器IP>`：
-- 用自己真实邮箱登录 → 应收到**真实验证码邮件**（QQ/163/Gmail 都测一遍）
-- 订阅一个事件 → 服务器上模拟触发：
-  ```bash
-  INTERNAL_KEY=$(grep '^INTERNAL_KEY=' /opt/tlr/server/.env | cut -d= -f2-)
-  curl -X POST "http://127.0.0.1:8787/internal/scan-reminders?today=<事件日期前3天>" -H "x-internal-key: $INTERNAL_KEY"
-  ```
-  → 应收到真实提醒邮件
-
-### 备案通过后（上线日）
+### 第 2 步：初始化服务器（SSH 到服务器执行）
 
 ```bash
-# 1. 云解析 DNS：nextlaunch.cn 添加 A 记录 → 服务器IP（www 可加 CNAME → nextlaunch.cn）
-# 2. 切换 Caddy 到域名模式：
-nano /etc/caddy/Caddyfile     # 注释 :80 块，取消 nextlaunch.cn 块的注释
-systemctl reload caddy        # 自动申请 HTTPS 证书，约1分钟
+ssh root@121.40.54.69
+bash /opt/tlr/deploy/setup.sh
+```
+
+约 3-5 分钟：装 Bun（npmmirror）、nginx、systemd 自启、每日备份。
+
+### 第 3 步：填 DirectMail 密钥（服务器上）
+
+```bash
+nano /opt/tlr/server/.env     # 填 ALIYUN_AK= 和 ALIYUN_SK=
+systemctl restart tlr
+curl -s http://127.0.0.1:8787/api/health   # 应输出 mail_driver":"directmail","events":49
+```
+
+### 第 4 步：备案前测试（IP 模式）
+
+浏览器打开 `http://121.40.54.69`：
+- 真实邮箱登录 → 应收到验证码邮件（QQ/163/Gmail 都测；垃圾箱也看）
+- 订阅事件 → 服务器上模拟触发提醒：
+  ```bash
+  bash /opt/tlr/deploy/update-data.sh   # 触发事件同步
+  INTERNAL_KEY=$(grep '^INTERNAL_KEY=' /opt/tlr/server/.env | cut -d= -f2-)
+  curl -X POST "http://127.0.0.1:8787/internal/scan-reminders?today=<事件日期前N天>" -H "x-internal-key: $INTERNAL_KEY"
+  ```
+
+### 第 5 步：备案通过后（上线日）
+
+```bash
+# 1. 云解析 DNS：nextlaunch.cn 加 A 记录 → 121.40.54.69（www 加 CNAME → nextlaunch.cn）
+# 2. 服务器上配 HTTPS（certbot 自动申请并续期 Let's Encrypt 证书）：
+apt-get install -y python3-certbot-nginx
+certbot --nginx -d nextlaunch.cn -d www.nextlaunch.cn
 # 3. 浏览器验证 https://nextlaunch.cn
 ```
 
 - 30 天内做**公安备案**：beian.mps.gov.cn
-- 把 ICP 备案号告诉 Claude，填入页脚（index.html 里已留占位）
+- 把 ICP 备案号告诉 Claude，填入页脚（index.html 已留占位）
 
 ## 日常运维
 
-| 操作 | 命令 |
-|---|---|
-| 看服务状态 | `systemctl status tlr` |
-| 看实时日志 | `journalctl -u tlr -f` |
-| 重启服务 | `systemctl restart tlr` |
-| 更新数据/代码 | 本地 push 后，服务器跑 `/opt/tlr/deploy/update-data.sh` |
-| 手动备份 | `/opt/tlr/deploy/backup.sh`（每天凌晨4点自动跑，保留30天） |
-| 恢复备份 | `gunzip -k 备份文件.gz`，停服后替换 `server/.data/app.db` |
+| 操作 | 在哪执行 | 命令 |
+|---|---|---|
+| **更新代码/数据** | 本地 Mac | `bash deploy/push-update.sh`（rsync + 重启 + 触发同步）|
+| 看服务状态 | 服务器 | `systemctl status tlr` |
+| 看实时日志 | 服务器 | `journalctl -u tlr -f` |
+| 重启服务 | 服务器 | `systemctl restart tlr` |
+| 手动触发事件同步 | 服务器 | `bash /opt/tlr/deploy/update-data.sh` |
+| 手动备份 | 服务器 | `bash /opt/tlr/deploy/backup.sh`（每日 4 点自动，留 30 天）|
+| 恢复备份 | 服务器 | `gunzip -k 备份.gz`，停服后替换 `server/.data/app.db` |
 
 ## 费用
 
-服务器约 ¥30-60/月（年付有优惠档）· 域名续费约 ¥30/年 · 邮件 200封/天内免费 · HTTPS 证书免费
+服务器约 ¥99/年（e实例）· 域名续费约 ¥30/年 · 邮件 200封/天内免费 · HTTPS 证书免费
+
+## 你的准备清单（资质类，与部署并行）
+
+- **ICP 备案**（关键路径 7-20 工作日）：个人主体、网站名称用个人化名字（如「麦琛的科技日历」）、人脸核验、注意 24h 内回工信部短信；备案通过前域名不能解析到服务器（`mail.` 子域的邮件 DNS 记录不受影响）
+- **公安备案**：上线后 30 天内
+- **DirectMail**：发信域名 `mail.nextlaunch.cn` 验证 ✅（已完成）→ 发信地址 `noreply@` → RAM 子账号 AccessKey
