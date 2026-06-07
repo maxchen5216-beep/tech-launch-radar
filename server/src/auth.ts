@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { sign, verify } from "hono/jwt";
 import type { Context, Next } from "hono";
-import { db, now } from "./db";
+import { join } from "node:path";
+import { db, now, AVATAR_DIR } from "./db";
 import { allow } from "./ratelimit";
 import { sendMail, mailDriver } from "./mail";
 
@@ -107,15 +108,68 @@ authRoutes.post("/verify", async (c) => {
     return c.json({ error: "wrong_code", message: "验证码错误" }, 400);
   }
 
-  // 成功：验证码一次性失效，登记用户
+  // 成功：验证码一次性失效，登记用户（注册与登录一体）
   db.query("DELETE FROM auth_codes WHERE email = ?").run(email);
   db.query(
     "INSERT INTO users(email, created_at, last_login_at) VALUES(?,?,?) ON CONFLICT(email) DO UPDATE SET last_login_at = excluded.last_login_at"
   ).run(email, now(), now());
-  const user = db.query("SELECT id FROM users WHERE email = ?").get(email) as { id: number };
+  const user = db.query("SELECT id, nickname, avatar FROM users WHERE email = ?").get(email) as {
+    id: number; nickname: string | null; avatar: string | null;
+  };
 
   const token = await sign({ uid: user.id, exp: Math.floor(Date.now() / 1000) + JWT_TTL_SEC }, jwtSecret());
-  return c.json({ ok: true, token, email });
+  return c.json({
+    ok: true, token, email,
+    profile: { nickname: user.nickname, avatar: user.avatar },
+    needs_profile: !user.nickname, // 新用户（或未完善资料）→ 前端进入「完善资料」步骤
+  });
+});
+
+// ---- 用户资料 ----
+
+const AVATAR_RE = /^(p:\d{1,2}|u:[A-Za-z0-9-]+\.(png|jpg|webp))$/;
+
+authRoutes.get("/me", requireAuth, (c) => {
+  const uid = c.get("uid" as never) as number;
+  const u = db.query("SELECT email, nickname, avatar FROM users WHERE id = ?").get(uid) as
+    | { email: string; nickname: string | null; avatar: string | null }
+    | null;
+  if (!u) return c.json({ error: "not_found" }, 404);
+  return c.json({ email: u.email, nickname: u.nickname, avatar: u.avatar, needs_profile: !u.nickname });
+});
+
+authRoutes.post("/me", requireAuth, async (c) => {
+  const uid = c.get("uid" as never) as number;
+  const body = await c.req.json().catch(() => ({}));
+  const nickname = String(body.nickname || "").trim();
+  const avatar = body.avatar != null ? String(body.avatar) : null;
+
+  if (nickname.length < 1 || nickname.length > 20) {
+    return c.json({ error: "invalid_nickname", message: "用户名需为 1-20 个字符" }, 400);
+  }
+  if (avatar !== null && avatar !== "" && !AVATAR_RE.test(avatar)) {
+    return c.json({ error: "invalid_avatar", message: "头像参数不合法" }, 400);
+  }
+
+  db.query("UPDATE users SET nickname = ?, avatar = ? WHERE id = ?").run(nickname, avatar || null, uid);
+  return c.json({ ok: true, profile: { nickname, avatar: avatar || null } });
+});
+
+// 头像上传（multipart 字段名 file；≤1MB；png/jpg/webp）
+authRoutes.post("/me/avatar", requireAuth, async (c) => {
+  const uid = c.get("uid" as never) as number;
+  const body = await c.req.parseBody();
+  const f = body.file;
+  if (!(f instanceof File)) return c.json({ error: "no_file", message: "未收到文件" }, 400);
+  if (f.size > 1024 * 1024) return c.json({ error: "too_large", message: "图片不能超过 1MB" }, 400);
+
+  const EXT: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+  const ext = EXT[f.type];
+  if (!ext) return c.json({ error: "bad_type", message: "仅支持 PNG / JPG / WebP" }, 400);
+
+  const fname = `${uid}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+  await Bun.write(join(AVATAR_DIR, fname), await f.arrayBuffer());
+  return c.json({ ok: true, avatar: `u:${fname}` });
 });
 
 // 注销账号（删除用户与全部订阅）

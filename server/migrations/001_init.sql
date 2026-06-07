@@ -2,6 +2,8 @@
 CREATE TABLE IF NOT EXISTS users (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   email         TEXT UNIQUE NOT NULL,
+  nickname      TEXT,             -- 首次登录后引导填写
+  avatar        TEXT,             -- 'p:<序号>'=卡通预设 | 'u:<文件名>'=用户上传
   created_at    TEXT NOT NULL,
   last_login_at TEXT
 );

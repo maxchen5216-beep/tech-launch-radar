@@ -384,6 +384,33 @@
     color: var(--faint); font-size: 11.5px; line-height: 1.5;
   }
   @media (max-width: 640px) { .auth-email { display: none; } }
+
+  /* ---- 头像与资料 ---- */
+  .avatar {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%; font-size: 17px;
+    border: 1px solid var(--line-strong); object-fit: cover; flex: none;
+  }
+  .avatar.sm { width: 28px; height: 28px; font-size: 14px; }
+  .user-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 3px 12px 3px 4px; cursor: pointer; transition: border-color 0.18s;
+  }
+  .user-chip:hover { border-color: var(--green); }
+  .pf-label { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.1em; color: var(--muted); margin: 6px 0 10px; }
+  .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
+  .avatar-opt {
+    aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--line);
+    font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    background: var(--surface); transition: all 0.15s; padding: 0; overflow: hidden;
+  }
+  .avatar-opt:hover { border-color: var(--muted); transform: scale(1.06); }
+  .avatar-opt.sel { border-color: var(--green); box-shadow: 0 0 12px rgba(0,229,160,0.35); }
+  .avatar-opt .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-opt.upload-tile { font-family: var(--mono); font-size: 11px; color: var(--muted); border-style: dashed; }
+  .avatar-opt.upload-tile:hover { color: var(--green); border-color: var(--green); }
+  .upload-tip { font-size: 11px; color: var(--faint); margin-bottom: 10px; }
   /* 纯浏览版（后端不可用，如纯静态托管）：隐藏登录与提醒入口 */
   .tlr-static #auth-slot, .tlr-static .remind-btn { display: none !important; }
 </style>

@@ -14,6 +14,15 @@ db.exec("PRAGMA foreign_keys = ON;");
 const migration = await Bun.file(join(SERVER_DIR, "migrations", "001_init.sql")).text();
 db.exec(migration);
 
+// 轻量列迁移：老库补充 users.nickname / users.avatar
+const userCols = (db.query("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
+if (!userCols.includes("nickname")) db.exec("ALTER TABLE users ADD COLUMN nickname TEXT");
+if (!userCols.includes("avatar")) db.exec("ALTER TABLE users ADD COLUMN avatar TEXT");
+
+// 用户上传头像目录
+export const AVATAR_DIR = join(DATA_DIR, "avatars");
+mkdirSync(AVATAR_DIR, { recursive: true });
+
 export const now = () => new Date().toISOString();
 
 /** 本地日期 YYYY-MM-DD（提醒触发以服务器本地时区为准） */

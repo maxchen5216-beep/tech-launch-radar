@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { join } from "node:path";
-import { db, localDateStr, metaGet, metaSet } from "./db";
+import { db, localDateStr, metaGet, metaSet, AVATAR_DIR } from "./db";
 import { authRoutes } from "./auth";
 import { subRoutes } from "./subscriptions";
 import { syncEvents } from "./sync-events";
@@ -53,6 +53,16 @@ app.get("/", () => serveFile("index.html"));
 app.get("/index.html", () => serveFile("index.html"));
 app.get("/data/:file", (c) => serveFile(`data/${c.req.param("file").replace(/[^\w.-]/g, "")}`));
 app.get("/assets/:file", (c) => serveFile(`assets/${c.req.param("file").replace(/[^\w.-]/g, "")}`));
+
+// 用户上传的头像
+app.get("/avatars/:file", async (c) => {
+  const name = c.req.param("file").replace(/[^\w.-]/g, "");
+  const f = Bun.file(join(AVATAR_DIR, name));
+  if (!(await f.exists())) return new Response("not found", { status: 404 });
+  const ext = name.slice(name.lastIndexOf(".") + 1);
+  const type = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+  return new Response(f, { headers: { "content-type": type, "cache-control": "public, max-age=86400" } });
+});
 
 // ---- 每日定时任务（每小时检查一次，按日期守卫保证每天只跑一次）----
 async function cronTick() {
