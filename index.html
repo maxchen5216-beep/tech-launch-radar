@@ -216,6 +216,7 @@
   .card.st-confirmed::before { border-color: var(--green); background: var(--green); box-shadow: 0 0 10px rgba(0,229,160,0.7); }
   .card.st-expected::before { border-color: var(--amber); }
   .card.st-rumored::before { border-color: var(--coral); border-style: dotted; }
+  .card.st-released::before { border-color: #5cc8ff; background: #5cc8ff; box-shadow: 0 0 10px rgba(92,200,255,0.6); }
   .card.past { opacity: 0.45; }
   .card.past:hover { opacity: 0.8; }
 
@@ -227,6 +228,7 @@
   .badge.confirmed { color: var(--green); background: var(--green-dim); border: 1px solid rgba(0,229,160,0.35); }
   .badge.expected { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(255,180,84,0.35); }
   .badge.rumored { color: var(--coral); background: var(--coral-dim); border: 1px solid rgba(255,122,107,0.35); }
+  .badge.released { color: #5cc8ff; background: rgba(92,200,255,0.12); border: 1px solid rgba(92,200,255,0.38); }
   .badge.cat { color: var(--muted); background: rgba(126,168,205,0.08); border: 1px solid var(--line); text-transform: none; letter-spacing: 0.04em; }
   .verified-mark {
     display: inline-flex; align-items: center; gap: 5px;
@@ -568,7 +570,7 @@
       lede: "追踪未来的科技圈重大发布会：消费电子、AI 与开发者大会、行业展会、游戏与智能汽车、前沿科技。每个条目均与官方信息源交叉校验；未定档的活动以历史规律标注模糊时间，点击「官方信息源」可跳转权威页面。",
       nextup: "下一场 / NEXT UP",
       days: "天", hours: "时", mins: "分", secs: "秒",
-      total: "收录活动", confirmed: "官方确认", expected: "预计", rumored: "传闻", live: "今日进行中 · LIVE",
+      total: "收录活动", confirmed: "官方确认", expected: "预计", rumored: "传闻", released: "悄悄上新", live: "今日进行中 · LIVE",
       liveBadge: "● 进行中", watchLive: "🔴 观看直播", liveGoto: "点击观看直播 →",
       all: "全部", search: "搜索 / search…",
       official: "官方信息源 ↗", srcnote: "校验说明", verified: "已核验", past: "已举行",
@@ -578,7 +580,7 @@
       lg_r: "传闻 — 来自媒体/供应链泄露，待官方确认",
       method: "校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。",
       updated: "数据更新于", privacyLink: "隐私政策",
-      cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技" },
+      cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技", quiet_launch: "悄悄新品" },
       months: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
       monthFmt: (y, m) => y + "年" + I18N.zh.months[m]
     },
@@ -590,7 +592,7 @@
       lede: "Tracking upcoming major tech events: consumer electronics, AI & developer conferences, industry expos, gaming & smart vehicles, and frontier tech. Every entry is cross-checked against official sources; undated events carry a fuzzy window inferred from historical cadence. Click 'Official source' to jump to the authoritative page.",
       nextup: "NEXT UP",
       days: "days", hours: "hrs", mins: "min", secs: "sec",
-      total: "Events", confirmed: "Confirmed", expected: "Expected", rumored: "Rumored", live: "LIVE TODAY",
+      total: "Events", confirmed: "Confirmed", expected: "Expected", rumored: "Rumored", released: "Just Launched", live: "LIVE TODAY",
       liveBadge: "● LIVE NOW", watchLive: "🔴 Watch live", liveGoto: "Watch the livestream →",
       all: "All", search: "Search…",
       official: "Official source ↗", srcnote: "Verification note", verified: "Verified", past: "Past",
@@ -600,13 +602,13 @@
       lg_r: "Rumored — based on media / supply-chain leaks, pending official confirmation",
       method: "Methodology: every entry is cross-checked via web search against official sources (event pages, press releases, official social accounts) before inclusion. 'Expected' and 'Rumored' entries are unconfirmed inferences — official announcements prevail. Data is re-verified and refreshed by a scheduled job.",
       updated: "Data updated", privacyLink: "Privacy Policy",
-      cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier" },
+      cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier", quiet_launch: "Quiet Launch" },
       monthFmt: (y, m) => ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][m] + " " + y
     }
   };
 
-  const CAT_KEYS = ["consumer", "ai_dev", "expo", "gaming_auto", "frontier"];
-  const ST_KEYS = ["confirmed", "expected", "rumored"];
+  const CAT_KEYS = ["consumer", "ai_dev", "expo", "gaming_auto", "frontier", "quiet_launch"];
+  const ST_KEYS = ["rumored"]; // 仅保留「传闻」状态筛选（官方确认/预计已去掉）
 
   let lang = localStorage.getItem("tlr-lang") || "zh";
   let activeCat = "all";
@@ -684,7 +686,8 @@
   function isLiveNow(e) { const t = todayStr(); return e.date_sort <= t && t <= eventEnd(e); }
 
   function cardHTML(e, idx) {
-    const isPast = eventEnd(e) < todayStr();
+    // 悄悄新品（已发布产品）不算"过期"，照常高亮展示
+    const isPast = e.status !== "released" && eventEnd(e) < todayStr();
     const live = isLiveNow(e);
     const name = lang === "zh" ? e.name_zh : e.name_en;
     const altName = lang === "zh" ? e.name_en : e.name_zh;

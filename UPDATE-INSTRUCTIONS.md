@@ -41,11 +41,11 @@
   "name_en": "Event Name",
   "name_zh": "中文名称",
   "organizer": "主办方",
-  "category": "consumer | ai_dev | expo | gaming_auto | frontier",
+  "category": "consumer | ai_dev | expo | gaming_auto | frontier | quiet_launch",
   "date_display_en": "September 9, 2026 / Expected early September 2026",
   "date_display_zh": "2026年9月9日 / 预计2026年9月上旬",
   "date_sort": "YYYY-MM-DD",        // 模糊时间用估计的代表日期，仅用于排序
-  "status": "confirmed | expected | rumored",
+  "status": "confirmed | expected | rumored | released",
   "summary_en": "1-2 sentence summary",
   "summary_zh": "1-2句中文概要",
   "official_url": "https://...",    // 权威信息源，可点击跳转
@@ -58,3 +58,13 @@
 
 注意：更新条目时**保留已有的 `date_end` 与 `live_url` 字段**；新增已官宣的多日活动请补 `date_end`；
 确认有官方直播的活动（厂商 Keynote、游戏直面会等）补 `live_url`（优先官方活动页/官方 YouTube 频道）。
+
+## 「悄悄新品」分类（quiet_launch / status=released）
+
+- **定义**：**没有开发布会、但最近一周内已悄悄上市/上线的科技产品**（厂商直接上架、博客/官网公告，没有 Keynote）。
+- 该分类条目固定用 `"category": "quiet_launch"` + `"status": "released"`。
+- `date_sort` / `date_display_*` 填**实际发布/上市日期**（近一周内的日期）；不要填未来。
+- 无需 `live_url`；`official_url` 指向产品页或官方公告。
+- **滚动维护**：每次更新时，**移除发布已超过 7 天的旧条目**，补入最近一周的新品，保持"最近一周"这个滚动窗口。
+- 页面上这类条目用蓝色「悄悄上新」徽章、不会被置灰（与即将到来的发布会区分）。
+- 示例来源：手机/耳机/手表/配件的静默上架、AI 模型/App 的低调上线、相机固件大版本、开发板/硬件小批量发售等。
