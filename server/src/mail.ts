@@ -81,7 +81,7 @@ async function sendViaDirectMail(msg: MailMessage): Promise<void> {
     AddressType: "1",
     ReplyToAddress: "false",
     ToAddress: msg.to,
-    FromAlias: process.env.MAIL_FROM_ALIAS || "科技圈发布会雷达",
+    FromAlias: process.env.MAIL_FROM_ALIAS || "发布时刻",
     Subject: msg.subject,
     TextBody: msg.text,
   };

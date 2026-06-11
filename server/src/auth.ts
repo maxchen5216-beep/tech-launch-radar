@@ -70,7 +70,7 @@ authRoutes.post("/send-code", async (c) => {
 
   const sent = await sendMail({
     to: email,
-    subject: "【科技圈发布会雷达】登录验证码",
+    subject: "【发布时刻】登录验证码",
     text: `您的登录验证码为 ${code}，5 分钟内有效。如非本人操作请忽略。`,
     type: "code",
   });

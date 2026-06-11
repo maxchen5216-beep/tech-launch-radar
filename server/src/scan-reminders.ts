@@ -35,7 +35,7 @@ export async function deliverReminder(p: {
   if (p.email) {
     const msg = {
       to: p.email, type: p.type, eventId: p.eventId, meta: p.meta,
-      subject: p.type === "announce" ? `【下一场发布会】${p.name_zh} 已官宣定档` : `【下一场发布会】${p.name_zh} ${p.leadDaysText}`,
+      subject: p.type === "announce" ? `【发布时刻】${p.name_zh} 已官宣定档` : `【发布时刻】${p.name_zh} ${p.leadDaysText}`,
       text: p.type === "announce"
         ? `您关注的「${p.name_zh} / ${p.name_en}」已官宣，时间：${p.date_sort}。\n官方信息源：${p.official_url}`
         : `您订阅的「${p.name_zh} / ${p.name_en}」将于 ${p.date_sort} 举行（${p.leadDaysText}）。\n官方信息源：${p.official_url}`,
