@@ -12,3 +12,4 @@ server/.env
 # 系统文件
 .DS_Store
 *.log
+scripts/.env
