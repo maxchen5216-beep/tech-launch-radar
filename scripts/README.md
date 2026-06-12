@@ -25,9 +25,10 @@ bun scripts/update-events.ts         # 实际写入 data/events-data.js
 `scripts/.env`（**已 gitignore，切勿提交**）：
 ```
 DASHSCOPE_API_KEY=sk-...     # 阿里百炼 API Key
-QWEN_MODEL=qwen3.7-max
+QWEN_MODEL=qwen3.7-max-2026-06-08
 ```
-关键参数：调用时带 `enable_search:true` + `search_options:{forced_search:true, enable_source:true}` 才会真正联网并返回来源（否则模型用旧知识、不给 URL）。
+关键参数：只用 `enable_search:true` + 一条 system 提示"直接输出最终JSON"。
+（注意：该快照若加 `forced_search` 会进入智能体模式只吐工具调用、不给最终答案，故不用它。）
 
 ## 数据质量说明（重要）
 

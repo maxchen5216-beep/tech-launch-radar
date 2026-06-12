@@ -70,7 +70,8 @@ ${JSON.stringify(pending, null, 0)}
     { "id": "kebab-id", "name_zh": "中文名", "name_en": "English name", "organizer": "厂商", "date_sort": "2026-06-xx", "date_display_zh": "2026年6月x日", "date_display_en": "June x, 2026", "summary_zh": "1-2句", "summary_en": "1-2 sentences", "official_url": "产品页/公告URL", "source_note_zh": "来源与校验说明" }
   ]
 }
-没有变化就返回空数组。务必保证 date_sort 为真实发布日期；official_url 必须填你联网搜索结果里**真实存在的来源网址**（官网或权威媒体报道链接），不得编造、不得留空。`;
+没有变化就返回空数组。务必保证 date_sort 为真实发布日期；official_url 必须填你联网搜索结果里**真实存在的来源网址**（官网或权威媒体报道链接），不得编造、不得留空。
+【输出要求】完成联网搜索后，**只输出最终的 JSON 对象本身**，不要输出任何搜索过程、思考、工具调用语法、解释或 markdown 代码块。`;
 
 console.log(`🔎 调用 ${MODEL}（联网）复核 ${pending.length} 个待定事件 + 搜索悄悄新品…`);
 const res = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {
@@ -78,22 +79,45 @@ const res = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/
   headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
   body: JSON.stringify({
     model: MODEL,
-    enable_search: true,
-    // 强制真实联网搜索 + 返回来源（否则模型会用旧知识、不给 URL）
-    search_options: { forced_search: true, enable_source: true, enable_citation: false, search_strategy: "max" },
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 4000,
+    enable_search: true, // 只用 enable_search；加 forced_search 会让该模型进入智能体模式只吐工具调用
+    messages: [
+      { role: "system", content: "你可以联网搜索。完成搜索后直接输出最终的 JSON 结果，严禁输出任何工具调用语法、搜索过程或思考。" },
+      { role: "user", content: prompt },
+    ],
+    max_tokens: 6000,
   }),
 });
 const j: any = await res.json();
 if (!j.choices) { console.error("❌ 模型调用失败：", JSON.stringify(j).slice(0, 400)); process.exit(1); }
 let content: string = j.choices[0].message.content;
 
-// 提取 JSON（去掉可能的 markdown 包裹）
-const jm = content.match(/\{[\s\S]*\}/);
-if (!jm) { console.error("❌ 模型未返回 JSON：", content.slice(0, 300)); process.exit(1); }
-let parsed: any;
-try { parsed = JSON.parse(jm[0]); } catch (e) { console.error("❌ JSON 解析失败：", content.slice(0, 300)); process.exit(1); }
+// 健壮提取：模型可能在正文里夹杂搜索过程/工具调用语法，定位含目标键、括号配平的 JSON 对象
+function balanceFrom(text: string, start: number): string | null {
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (esc) { esc = false; continue; }
+    if (c === "\\") { esc = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === "{") depth++;
+    else if (c === "}") { depth--; if (depth === 0) return text.slice(start, i + 1); }
+  }
+  return null;
+}
+function extractJSON(text: string): any | null {
+  const keyIdx = Math.max(text.lastIndexOf('"quiet_launches"'), text.lastIndexOf('"event_updates"'));
+  if (keyIdx === -1) return null;
+  let start = text.lastIndexOf("{", keyIdx);
+  while (start >= 0) {
+    const cand = balanceFrom(text, start);
+    if (cand) { try { const o = JSON.parse(cand); if (o.quiet_launches || o.event_updates) return o; } catch {} }
+    start = text.lastIndexOf("{", start - 1);
+  }
+  return null;
+}
+const parsed = extractJSON(content);
+if (!parsed) { console.error("❌ 未能从返回中提取有效 JSON。正文片段：", content.slice(0, 400)); process.exit(1); }
 
 // ---- 应用变更（严格校验）----
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -116,8 +140,8 @@ for (const u of parsed.event_updates || []) {
   console.log(`  ✎ 事件更新: ${ev.name_zh} → ${u.new_status} ${u.new_date_sort}`);
 }
 
-// 任务二：滚动维护悄悄新品 —— 先删超 7 天旧的
-const cutoff = daysAgo(7);
+// 任务二：滚动维护悄悄新品 —— 保留窗口 10 天（给缓冲，避免免费模型搜索弱时分类空掉）
+const cutoff = daysAgo(10);
 const before = events.length;
 data.events = events.filter((e) => !(e.category === "quiet_launch" && e.date_sort < cutoff));
 prunedQuiet = before - data.events.length;
