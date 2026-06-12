@@ -139,21 +139,6 @@
   .countdown .num { font-size: 34px; font-weight: 600; color: var(--green); line-height: 1.1; font-variant-numeric: tabular-nums; }
   .countdown .cap { font-size: 10px; letter-spacing: 0.18em; color: var(--faint); text-transform: uppercase; margin-top: 4px; }
 
-  /* ---- stats strip ---- */
-  .stats {
-    display: flex; flex-wrap: wrap; gap: 0; margin-top: 26px;
-    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-  }
-  .stats .stat {
-    flex: 1; min-width: 130px; padding: 16px 20px; background: var(--surface);
-    border-right: 1px solid var(--line);
-  }
-  .stats .stat:last-child { border-right: 0; }
-  .stats .num { font-family: var(--mono); font-size: 26px; font-weight: 600; }
-  .stats .cap { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .stat.s-confirmed .num { color: var(--green); }
-  .stat.s-expected .num { color: var(--amber); }
-  .stat.s-rumored .num { color: var(--coral); }
 
   /* ---- filter bar ---- */
   .filterbar {
@@ -513,7 +498,6 @@
       </div>
     </div>
 
-    <div class="stats" id="stats"></div>
   </section>
 
   <div class="filterbar">
@@ -632,17 +616,6 @@
     $("#updated-line").textContent = T().updated + " " + DATA.updated + " · " + (lang === "zh" ? DATA.updated_note_zh : DATA.updated_note_en);
     $("#lang-zh").classList.toggle("active", lang === "zh");
     $("#lang-en").classList.toggle("active", lang === "en");
-  }
-
-  // ---------- stats ----------
-  function renderStats() {
-    const ev = DATA.events;
-    const count = (s) => ev.filter((e) => e.status === s).length;
-    $("#stats").innerHTML =
-      '<div class="stat"><div class="num">' + ev.length + '</div><div class="cap">' + T().total + "</div></div>" +
-      '<div class="stat s-confirmed"><div class="num">' + count("confirmed") + '</div><div class="cap">' + T().confirmed + "</div></div>" +
-      '<div class="stat s-expected"><div class="num">' + count("expected") + '</div><div class="cap">' + T().expected + "</div></div>" +
-      '<div class="stat s-rumored"><div class="num">' + count("rumored") + '</div><div class="cap">' + T().rumored + "</div></div>";
   }
 
   // ---------- filter chips ----------
@@ -805,7 +778,7 @@
   $("#search").addEventListener("input", (e) => { query = e.target.value; renderTimeline(); });
 
   function renderAll() {
-    renderStatic(); renderStats(); renderChips(); renderTimeline(); renderNextUp();
+    renderStatic(); renderChips(); renderTimeline(); renderNextUp();
     if (window.TLR_AFTER_ALL) window.TLR_AFTER_ALL(); // 登录模块刷新 header 文案
   }
   renderAll();
