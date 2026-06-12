@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>往期总结 · 发布时刻</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Noto+Sans+SC:wght@400;600;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#07090d; --surface:#0d1117; --line:rgba(126,168,205,.14); --line-strong:rgba(126,168,205,.28);
+    --ink:#e8eef4; --muted:#8294a6; --faint:#5a6b7c; --green:#00e5a0; --recap:#c39bff;
+    --mono:"IBM Plex Mono","Noto Sans SC",monospace; --display:"Unbounded","Noto Sans SC",sans-serif; --body:"Noto Sans SC",sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--body); line-height:1.85; }
+  body::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(ellipse 70% 50% at 70% -10%, rgba(195,155,255,.07), transparent 60%); }
+  .wrap { position:relative; z-index:1; max-width:760px; margin:0 auto; padding:40px 24px 90px; }
+  .back { font-family:var(--mono); font-size:13px; color:var(--muted); text-decoration:none; }
+  .back:hover { color:var(--recap); }
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.2em; color:var(--recap); text-transform:uppercase; margin:28px 0 12px; }
+  h1 { font-family:var(--display); font-weight:800; font-size:clamp(28px,5vw,44px); line-height:1.15; }
+  .en { font-family:var(--mono); font-size:14px; color:var(--faint); margin-top:8px; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; font-family:var(--mono); font-size:12.5px; }
+  .meta .chip { padding:4px 12px; border-radius:6px; background:rgba(126,168,205,.08); border:1px solid var(--line); color:var(--muted); }
+  .date { color:var(--ink); }
+  .official { display:inline-flex; align-items:center; gap:6px; margin-top:22px;
+    font-family:var(--mono); font-size:13px; font-weight:600; color:var(--green);
+    border:1px solid rgba(0,229,160,.4); border-radius:7px; padding:9px 16px; text-decoration:none; }
+  .official:hover { background:var(--green); color:#04130d; }
+  .divider { height:1px; background:var(--line-strong); margin:30px 0; }
+  .recap-body p { color:var(--muted); font-size:16px; margin-bottom:18px; }
+  .recap-body p:first-child::first-letter { color:var(--ink); }
+  .note { margin-top:36px; font-size:12px; color:var(--faint); font-family:var(--mono); line-height:1.6; }
+  .err { text-align:center; padding:120px 0; color:var(--faint); font-family:var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <a class="back" href="index.html">← 返回发布时刻</a>
+  <div id="content"><div class="err">加载中…</div></div>
+</div>
+
+<script src="data/events-data.js"></script>
+<script>
+(function () {
+  const $ = (s) => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const events = (window.EVENTS_DATA && window.EVENTS_DATA.events) || [];
+  const e = events.find((x) => x.id === id && x.recap);
+
+  function esc(s){ return String(s||"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+  if (!e) {
+    $("#content").innerHTML = '<div class="err">∅ 未找到该往期总结</div>';
+    return;
+  }
+  document.title = e.name_zh + " · 往期总结";
+  const cats = { consumer:"消费电子", ai_dev:"AI · 开发者", expo:"行业展会", gaming_auto:"游戏 · 智能汽车", frontier:"前沿科技" };
+  const paras = String(e.recap).split(/\n\n+/).map((p) => "<p>" + esc(p.trim()) + "</p>").join("");
+
+  $("#content").innerHTML =
+    '<div class="eyebrow">往期总结 · RECAP</div>' +
+    "<h1>" + esc(e.name_zh) + "</h1>" +
+    '<div class="en">' + esc(e.name_en) + "</div>" +
+    '<div class="meta">' +
+      '<span class="chip date">◷ ' + esc(e.date_display_zh) + "</span>" +
+      '<span class="chip">' + esc(e.organizer) + "</span>" +
+      (cats[e.category] ? '<span class="chip">' + cats[e.category] + "</span>" : "") +
+    "</div>" +
+    (e.official_url ? '<a class="official" href="' + esc(e.official_url) + '" target="_blank" rel="noopener noreferrer">官方信息源 ↗</a>' : "") +
+    '<div class="divider"></div>' +
+    '<div class="recap-body">' + paras + "</div>" +
+    '<div class="note">本总结为编辑整理的回顾性内容，具体数据以官方发布为准。</div>';
+})();
+</script>
+</body>
+</html>

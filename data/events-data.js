@@ -8,9 +8,9 @@
 // verified: 是否已与官方信息源直接核对
 // ============================================================
 window.EVENTS_DATA = {
-  "updated": "2026-06-11",
-  "updated_note_zh": "2026年6月11日刷新：新增「悄悄新品」近一周静默发布的产品；既有发布会条目经复核状态未变",
-  "updated_note_en": "Refreshed June 11, 2026: added Quiet Launch (products released this week without an event); existing events re-checked, statuses unchanged",
+  "updated": "2026-06-12",
+  "updated_note_zh": "2026年6月12日：新增「往期总结」栏目，精选 10 场已结束发布会做成回顾",
+  "updated_note_en": "June 12, 2026: added Recaps section with 10 past events",
   "events": [
     {
       "id": "apple-wwdc-2026",
@@ -28,7 +28,8 @@ window.EVENTS_DATA = {
       "source_note_zh": "已与 Apple 官方新闻稿（2026年5月18日）及 apple.com/apple-events 活动页交叉核对，日期与时间均为官方确认。",
       "verified": true,
       "date_end": "2026-06-12",
-      "live_url": "https://www.apple.com/apple-events/"
+      "live_url": "https://www.apple.com/apple-events/",
+      "recap": "苹果 WWDC 2026 于6月8日至12日举行，主题演讲发布了 iOS 27、iPadOS 27、macOS 27、watchOS 27 与 visionOS 27 等系统更新，并重点升级 Apple Intelligence 与 Siri 的端侧 AI 能力。\n\n开发者大会聚焦端侧智能、跨设备体验与新一代开发框架，是观察苹果未来一年软件与 AI 方向的最重要节点。"
     },
     {
       "id": "summer-game-fest-2026",
@@ -46,7 +47,8 @@ window.EVENTS_DATA = {
       "source_note_zh": "经官方网站 summergamefest.com 交叉校验，确认2026年6月5日（太平洋时间下午2点）于杜比剧院举行。",
       "verified": true,
       "date_end": "2026-06-08",
-      "live_url": "https://www.summergamefest.com/"
+      "live_url": "https://www.summergamefest.com/",
+      "recap": "夏日游戏节（Summer Game Fest）2026 于6月5日至8日在洛杉矶杜比剧院举行，由 Geoff Keighley 主持，揭开了夏季游戏发布季的序幕。\n\n多家厂商带来新作首曝、实机演示与上市日期，跨平台大作与独立游戏同台亮相，是年中最受关注的游戏发布窗口之一。"
     },
     {
       "id": "xbox-games-showcase-2026",
@@ -63,7 +65,8 @@ window.EVENTS_DATA = {
       "official_url": "https://news.xbox.com/en-us/2026/03/30/xbox-games-showcase-2026-gears-of-war-e-day-direct/",
       "source_note_zh": "经 Xbox Wire 官方公告（2026年3月30日及6月1日观看指南）确认日期与时间。",
       "verified": true,
-      "live_url": "https://www.youtube.com/xbox"
+      "live_url": "https://www.youtube.com/xbox",
+      "recap": "Xbox 游戏展示会 2026 于6月7日播出，微软集中公布了第一方与第三方新作，并紧接《战争机器：E-Day》深度专场直播。\n\n展示会覆盖 Game Pass 新增阵容、跨平台战略与未来大作路线图，是 Xbox 阵营年度最重要的内容发布节点。"
     },
     {
       "id": "awe-usa-2026",
@@ -930,6 +933,125 @@ window.EVENTS_DATA = {
       "official_url": "https://www.samsung.com/us/support/",
       "source_note_zh": "Sammy Fans 报道（确认6月8日起、Watch 7/8、39项漏洞）；源页抓取受限，建议以三星更新日志二次核对，故 verified=false。",
       "verified": false
+    },
+    {
+      "id": "ces-2026",
+      "name_zh": "CES 2026 国际消费电子展",
+      "name_en": "CES 2026",
+      "organizer": "CTA",
+      "category": "expo",
+      "date_sort": "2026-01-06",
+      "date_display_zh": "2026年1月6日–9日 · 拉斯维加斯",
+      "date_display_en": "January 6–9, 2026 · Las Vegas",
+      "status": "confirmed",
+      "summary_zh": "开年最大科技展，AI 渗透各品类。",
+      "summary_en": "The year's biggest tech show; AI everywhere.",
+      "official_url": "https://www.ces.tech/",
+      "source_note_zh": "编辑回顾整理，日期为 CES 官方公布。",
+      "verified": false,
+      "recap": "2026 年国际消费电子展（CES）于1月6日至9日在拉斯维加斯举行，是开年最大的科技风向标。本届展会 AI 几乎渗透到每一个品类：AI PC、AI 手机、家用机器人、智能座舱与可穿戴健康设备。\n\n车载与自动驾驶、具身智能机器人、XR 头显是三大热点；中国厂商在电视、储能、智能家居等领域继续扩大存在感。CES 2026 再次确认：AI 从云端走向终端、走进家庭，是这一年科技产品的主旋律。"
+    },
+    {
+      "id": "samsung-galaxy-s26-unpacked-2026",
+      "name_zh": "三星 Galaxy Unpacked（Galaxy S26）",
+      "name_en": "Samsung Galaxy Unpacked (Galaxy S26)",
+      "organizer": "Samsung",
+      "category": "consumer",
+      "date_sort": "2026-01-21",
+      "date_display_zh": "2026年1月 · Galaxy S26 系列",
+      "date_display_en": "January 2026 · Galaxy S26 series",
+      "status": "confirmed",
+      "summary_zh": "三星发布 Galaxy S26 旗舰系列。",
+      "summary_en": "Samsung unveils the Galaxy S26 flagships.",
+      "official_url": "https://www.samsung.com/global/galaxy/",
+      "source_note_zh": "编辑回顾整理。",
+      "verified": false,
+      "recap": "三星在1月举行 Galaxy Unpacked，发布 Galaxy S26 系列旗舰。新机延续影像与 AI 主线，强化端侧生成式 AI（Galaxy AI）在翻译、影像编辑、跨应用助手上的能力。\n\nUltra 机型在影像系统、屏幕与续航上进一步打磨，并深化与 One UI 的整合。这场发布会为 2026 年安卓旗舰季定下基调。"
+    },
+    {
+      "id": "mwc-barcelona-2026",
+      "name_zh": "MWC 巴塞罗那 2026",
+      "name_en": "MWC Barcelona 2026",
+      "organizer": "GSMA",
+      "category": "expo",
+      "date_sort": "2026-03-02",
+      "date_display_zh": "2026年3月2日–5日 · 巴塞罗那",
+      "date_display_en": "March 2–5, 2026 · Barcelona",
+      "status": "confirmed",
+      "summary_zh": "全球移动通信旗舰展，聚焦 5G-A/6G 与 AI 终端。",
+      "summary_en": "Flagship mobile show: 5G-A/6G and AI devices.",
+      "official_url": "https://www.mwcbarcelona.com/",
+      "source_note_zh": "编辑回顾整理。",
+      "verified": false,
+      "recap": "世界移动通信大会（MWC）2026 于3月初在巴塞罗那举行，聚焦 5G-A/6G、AI 与终端、卫星直连与电信网络的智能化。\n\n各大厂商展示了 AI 智能体在手机与运营商网络中的落地，折叠屏、概念机型与 AI 终端成为展台焦点。MWC 仍是观察全球移动与通信产业走向的最重要窗口。"
+    },
+    {
+      "id": "nvidia-gtc-2026",
+      "name_zh": "NVIDIA GTC 2026",
+      "name_en": "NVIDIA GTC 2026",
+      "organizer": "NVIDIA",
+      "category": "ai_dev",
+      "date_sort": "2026-03-16",
+      "date_display_zh": "2026年3月 · 圣何塞",
+      "date_display_en": "March 2026 · San Jose",
+      "status": "confirmed",
+      "summary_zh": "AI 算力风向标，黄仁勋主题演讲。",
+      "summary_en": "The AI compute bellwether; Jensen Huang keynote.",
+      "official_url": "https://www.nvidia.com/gtc/",
+      "source_note_zh": "编辑回顾整理。",
+      "verified": false,
+      "recap": "英伟达 GTC 2026 于3月在圣何塞举行，黄仁勋的主题演讲再次成为 AI 算力的风向标。大会围绕新一代 GPU 架构、AI 数据中心、推理算力与具身智能（机器人）展开。\n\n从训练到推理、从云到端，英伟达持续强化其 AI 全栈布局；机器人与自动驾驶的仿真与基础模型是本届的重要看点。"
+    },
+    {
+      "id": "gdc-2026",
+      "name_zh": "GDC 2026 游戏开发者大会",
+      "name_en": "GDC 2026",
+      "organizer": "Informa",
+      "category": "gaming_auto",
+      "date_sort": "2026-03-23",
+      "date_display_zh": "2026年3月 · 旧金山",
+      "date_display_en": "March 2026 · San Francisco",
+      "status": "confirmed",
+      "summary_zh": "全球最重要的游戏开发者盛会。",
+      "summary_en": "The premier game developers conference.",
+      "official_url": "https://gdconf.com/",
+      "source_note_zh": "编辑回顾整理。",
+      "verified": false,
+      "recap": "游戏开发者大会（GDC）2026 于3月在旧金山举行，是全球游戏行业最重要的开发者盛会。AI 在游戏开发中的应用、引擎技术、独立游戏与跨平台是核心议题。\n\n生成式 AI 辅助内容生产、NPC 智能化引发广泛讨论与争议；各大引擎与平台公布了面向开发者的新工具。"
+    },
+    {
+      "id": "google-io-2026",
+      "name_zh": "Google I/O 2026",
+      "name_en": "Google I/O 2026",
+      "organizer": "Google",
+      "category": "ai_dev",
+      "date_sort": "2026-05-19",
+      "date_display_zh": "2026年5月19日–20日 · 山景城",
+      "date_display_en": "May 19–20, 2026 · Mountain View",
+      "status": "confirmed",
+      "summary_zh": "谷歌开发者大会，主线 Gemini。",
+      "summary_en": "Google's developer conference, all-in on Gemini.",
+      "official_url": "https://io.google/",
+      "source_note_zh": "编辑回顾整理。",
+      "verified": false,
+      "recap": "Google I/O 2026 于5月19日至20日在山景城 Shoreline 露天剧场举行。大会主线高度聚焦 Gemini：从模型能力升级到在搜索、Android、Workspace 与设备端的全面落地。\n\nAndroid 新版本、AI 智能体、端侧模型与开发者工具是重点。Google 延续「AI 优先」战略，把 Gemini 推向其全线产品。"
+    },
+    {
+      "id": "microsoft-build-2026",
+      "name_zh": "Microsoft Build 2026",
+      "name_en": "Microsoft Build 2026",
+      "organizer": "Microsoft",
+      "category": "ai_dev",
+      "date_sort": "2026-05-19",
+      "date_display_zh": "2026年5月 · 西雅图",
+      "date_display_en": "May 2026 · Seattle",
+      "status": "confirmed",
+      "summary_zh": "微软开发者大会，主线 Copilot 与 Agent。",
+      "summary_en": "Microsoft's dev conference: Copilot and agents.",
+      "official_url": "https://build.microsoft.com/",
+      "source_note_zh": "编辑回顾整理。",
+      "verified": false,
+      "recap": "微软 Build 2026 于5月举行，面向开发者，主线是 Copilot 与 AI 智能体（Agent）在开发、办公与云上的深化。\n\n从 GitHub Copilot 到 Windows、Azure AI、Microsoft 365 Copilot，微软展示了「智能体时代」的开发范式与工具链。AI 编程、企业级 Agent 编排是关键看点。"
     }
   ]
 };

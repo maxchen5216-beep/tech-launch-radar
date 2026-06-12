@@ -140,8 +140,8 @@ for (const u of parsed.event_updates || []) {
   console.log(`  ✎ 事件更新: ${ev.name_zh} → ${u.new_status} ${u.new_date_sort}`);
 }
 
-// 任务二：滚动维护悄悄新品 —— 保留窗口 10 天（给缓冲，避免免费模型搜索弱时分类空掉）
-const cutoff = daysAgo(10);
+// 任务二：滚动维护悄悄新品 —— 保留窗口 30 天（约一个月后再删）
+const cutoff = daysAgo(30);
 const before = events.length;
 data.events = events.filter((e) => !(e.category === "quiet_launch" && e.date_sort < cutoff));
 prunedQuiet = before - data.events.length;

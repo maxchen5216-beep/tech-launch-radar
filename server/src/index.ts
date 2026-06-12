@@ -88,6 +88,7 @@ async function serveFile(rel: string) {
 app.get("/", () => serveFile("index.html"));
 app.get("/index.html", () => serveFile("index.html"));
 app.get("/privacy.html", () => serveFile("privacy.html"));
+app.get("/recap.html", () => serveFile("recap.html"));
 app.get("/data/:file", (c) => serveFile(`data/${c.req.param("file").replace(/[^\w.-]/g, "")}`));
 app.get("/assets/:file", (c) => serveFile(`assets/${c.req.param("file").replace(/[^\w.-]/g, "")}`));
 

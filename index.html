@@ -214,6 +214,14 @@
   .badge.expected { color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(255,180,84,0.35); }
   .badge.rumored { color: var(--coral); background: var(--coral-dim); border: 1px solid rgba(255,122,107,0.35); }
   .badge.released { color: #5cc8ff; background: rgba(92,200,255,0.12); border: 1px solid rgba(92,200,255,0.38); }
+  .recap-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    color: #c39bff; text-decoration: none;
+    border: 1px solid rgba(195,155,255,0.42); border-radius: 7px; padding: 8px 16px;
+    background: rgba(195,155,255,0.08); transition: all 0.18s;
+  }
+  .recap-link:hover { background: #c39bff; color: #1a0e2e; }
   .badge.cat { color: var(--muted); background: rgba(126,168,205,0.08); border: 1px solid var(--line); text-transform: none; letter-spacing: 0.04em; }
   .verified-mark {
     display: inline-flex; align-items: center; gap: 5px;
@@ -564,7 +572,8 @@
       lg_r: "传闻 — 来自媒体/供应链泄露，待官方确认",
       method: "校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。",
       updated: "数据更新于", privacyLink: "隐私政策",
-      cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技", quiet_launch: "悄悄新品" },
+      cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技", quiet_launch: "悄悄新品", recap: "往期总结" },
+      viewRecap: "📄 查看总结",
       months: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
       monthFmt: (y, m) => y + "年" + I18N.zh.months[m]
     },
@@ -586,12 +595,13 @@
       lg_r: "Rumored — based on media / supply-chain leaks, pending official confirmation",
       method: "Methodology: every entry is cross-checked via web search against official sources (event pages, press releases, official social accounts) before inclusion. 'Expected' and 'Rumored' entries are unconfirmed inferences — official announcements prevail. Data is re-verified and refreshed by a scheduled job.",
       updated: "Data updated", privacyLink: "Privacy Policy",
-      cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier", quiet_launch: "Quiet Launch" },
+      cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier", quiet_launch: "Quiet Launch", recap: "Recaps" },
+      viewRecap: "📄 Read recap",
       monthFmt: (y, m) => ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][m] + " " + y
     }
   };
 
-  const CAT_KEYS = ["consumer", "ai_dev", "expo", "gaming_auto", "frontier", "quiet_launch"];
+  const CAT_KEYS = ["consumer", "ai_dev", "expo", "gaming_auto", "frontier", "quiet_launch", "recap"];
   const ST_KEYS = ["rumored"]; // 仅保留「传闻」状态筛选（官方确认/预计已去掉）
 
   let lang = localStorage.getItem("tlr-lang") || "zh";
@@ -643,10 +653,17 @@
   // ---------- timeline ----------
   function filtered() {
     const q = query.trim().toLowerCase();
+    const match = (e) => !q || (e.name_en + " " + e.name_zh + " " + e.organizer).toLowerCase().includes(q);
+    // 「往期总结」：只看有 recap 的已结束发布会，最近的在前
+    if (activeCat === "recap") {
+      return DATA.events.filter((e) => e.recap).filter(match).sort((a, b) => b.date_sort.localeCompare(a.date_sort));
+    }
+    // 其余视图：往期条目（有 recap）已移入「往期总结」，主时间线不再显示
     return DATA.events
+      .filter((e) => !e.recap)
       .filter((e) => activeCat === "all" || e.category === activeCat)
       .filter((e) => activeStatus === "all" || e.status === activeStatus)
-      .filter((e) => !q || (e.name_en + " " + e.name_zh + " " + e.organizer).toLowerCase().includes(q))
+      .filter(match)
       .sort((a, b) => a.date_sort.localeCompare(b.date_sort));
   }
 
@@ -659,6 +676,7 @@
   function isLiveNow(e) { const t = todayStr(); return e.date_sort <= t && t <= eventEnd(e); }
 
   function cardHTML(e, idx) {
+    const isRecap = !!e.recap; // 往期总结条目
     // 悄悄新品（已发布产品）不算"过期"，照常高亮展示
     const isPast = e.status !== "released" && eventEnd(e) < todayStr();
     const live = isLiveNow(e);
@@ -681,9 +699,10 @@
         '<div class="organizer">' + esc(e.organizer) + "</div>" +
         '<p class="summary">' + esc(summary) + "</p>" +
         '<div class="foot">' +
+          (isRecap ? '<a class="recap-link" href="recap.html?id=' + encodeURIComponent(e.id) + '" target="_blank" rel="noopener noreferrer">' + T().viewRecap + " →</a>" : "") +
           (live && e.live_url ? '<a class="live-link" href="' + esc(e.live_url) + '" target="_blank" rel="noopener noreferrer">' + T().watchLive + " ↗</a>" : "") +
           '<a class="src-link" href="' + esc(e.official_url) + '" target="_blank" rel="noopener noreferrer">' + T().official + "</a>" +
-          '<button class="remind-btn" data-event-id="' + esc(e.id) + '" data-event-status="' + e.status + '"></button>' +
+          (isRecap ? "" : '<button class="remind-btn" data-event-id="' + esc(e.id) + '" data-event-status="' + e.status + '"></button>') +
           '<button class="cmt-btn" data-event-id="' + esc(e.id) + '">💬</button>' +
           '<details class="srcnote"><summary>' + T().srcnote + "</summary><p>" + esc(e.source_note_zh) + "</p></details>" +
         "</div>" +
