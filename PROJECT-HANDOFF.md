@@ -10,8 +10,8 @@
 **中英双语的科技发布会日历网站 + 微信小程序**：聚合未来 12 个月的科技圈重大发布会（时间、概要、官方信息源链接），支持邮箱/微信登录、发布会提醒（邮件/微信订阅消息）、评论（敏感词过滤）。
 
 - 品牌名：**「下一场发布会 / THE NEXT LAUNCH」**（曾用名「科技圈发布会雷达 / Tech Launch Radar」，2026-06-06 改名以呼应域名）
-- 域名：**nextlaunch.cn**（阿里云购买，曾短暂用 maxchen.fun 后弃用）
-- 运营定位：**面向中国大陆用户、公开运营、个人主体**（这决定了大量合规设计，见 §8）
+- 域名：**fabushike.com**（阿里云购买，曾短暂用 maxchen.fun 后弃用）
+- 运营定位：**面向中国大陆用户、公开运营、企业主体（公司）**（这决定了大量合规设计，见 §8）
 
 ### 「科技圈」范围定义（用户确认）
 | category | 内容 |
@@ -89,10 +89,10 @@ source_note_zh(校验说明) verified(是否与官方核对)
 | 项 | 值 |
 |---|---|
 | 生产服务器 | 阿里云 ECS 经济型e（2C2G，Ubuntu 24.04，杭州）**121.40.54.69** |
-| 域名 | nextlaunch.cn（**ICP 备案进行中**，个人主体；.fun 弃用） |
+| 域名 | fabushike.com（**ICP 备案进行中**，企业主体；nextlaunch.cn(个人备案)拟撤换） |
 | GitHub | `maxchen5216-beep/tech-launch-radar`（公开）；Pages 纯浏览版：maxchen5216-beep.github.io/tech-launch-radar |
 | 进程管理 | systemd `tlr.service`（开机自启/崩溃重启/TZ=Asia/Shanghai/资源限制） |
-| 反代 | nginx（80端口；`/internal/* deny`；XFF 覆盖防伪造；2m 上传上限）。备案后 `certbot --nginx -d nextlaunch.cn` 上 HTTPS |
+| 反代 | nginx（80端口；`/internal/* deny`；XFF 覆盖防伪造；2m 上传上限）。备案后 `certbot --nginx -d fabushike.com` 上 HTTPS |
 | 邮件 | DirectMail 发信域名 `mail.nextlaunch.cn` 已验证（DKIM/SPF/DMARC/MX 四条DNS已配），发信地址 `noreply@mail.nextlaunch.cn`，RAM 子账号 AK/SK 已配在服务器 .env |
 | 备份 | 每日 4 点 SQLite `.backup` + 头像 tar，保留 30 天（/opt/tlr/backups） |
 | SSH | 本机已配免密（`~/.ssh/id_ed25519` → root@121.40.54.69），**Claude 可直接远程操作服务器** |
@@ -177,7 +177,7 @@ rate_limit(bucket_key, count, window_end) · meta(key,value: jwt_secret/last_syn
 - 微信小程序代码完成（前端 miniprogram/ + 后端 wx 支持），**已推 GitHub**
 
 ### ⏳ 卡点/待办（按优先级）
-1. **ICP 备案审核中**（个人主体，nextlaunch.cn）——唯一长等待。通过后执行：DNS A记录→服务器IP；`certbot --nginx -d nextlaunch.cn`；页脚填备案号；30天内公安备案。**备案前公网无法访问（阿里云拦截），测试走 SSH 隧道**
+1. **ICP 备案审核中**（个人主体，fabushike.com）——唯一长等待。通过后执行：DNS A记录→服务器IP；`certbot --nginx -d fabushike.com`；页脚填备案号；30天内公安备案。**备案前公网无法访问（阿里云拦截），测试走 SSH 隧道**
 2. **小程序后端改动未部署到服务器**（涉及生产库 users 表重建迁移，已测安全，等用户确认后 `bash deploy/push-update.sh`）
 3. **用户需注册微信小程序**（个人主体）拿 AppID/AppSecret → 填 `miniprogram/project.config.json` + `miniprogram/config.js` + 服务器 .env 的 WX_*；申请订阅消息模板拿 template_id（模板字段需与 `scan-reminders.ts` 的 data keys 对齐）
 4. **ADMIN_EMAILS 未配置**（服务器 .env 空）——配置前没人能删违规评论。等用户提供其登录邮箱

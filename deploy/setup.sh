@@ -53,7 +53,7 @@ JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '=+/')
 INTERNAL_KEY=$(head -c 24 /dev/urandom | base64 | tr -d '=+/')
 REMINDER_DAILY_CAP=180
 # 允许的前端跨域来源（逗号分隔）。同源访问无需填；如用独立前端域名再加
-CORS_ORIGINS=https://nextlaunch.cn,https://www.nextlaunch.cn
+CORS_ORIGINS=https://fabushike.com,https://www.fabushike.com
 # 管理员邮箱（逗号分隔）：可删除任何用户的评论。请填你登录用的邮箱
 ADMIN_EMAILS=
 EOF
@@ -84,5 +84,5 @@ echo ""
 echo "✅ 初始化完成。后续步骤："
 echo "   1. nano $APP_DIR/server/.env 填入 DirectMail 的 ALIYUN_AK/SK，然后 systemctl restart tlr"
 echo "   2. 备案前：浏览器访问 http://<服务器IP> 测试"
-echo "   3. 备案通过后：apt install -y python3-certbot-nginx && certbot --nginx -d nextlaunch.cn（自动上 HTTPS）"
+echo "   3. 备案通过后：apt install -y python3-certbot-nginx && certbot --nginx -d fabushike.com（自动上 HTTPS）"
 echo "   状态：systemctl status tlr · 日志：journalctl -u tlr -f"

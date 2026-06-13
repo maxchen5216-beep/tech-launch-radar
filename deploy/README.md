@@ -1,4 +1,4 @@
-# 阿里云国内服务器部署手册（nextlaunch.cn · 121.40.54.69）
+# 阿里云国内服务器部署手册（fabushike.com · 121.40.54.69）
 
 > 完整版部署：静态页 + 后端（登录/提醒）+ DirectMail 真实邮件。
 > **国内服务器访问不了 GitHub**，所以代码从本地 Mac 用 rsync 直推；Bun 走 npmmirror 国内镜像；反代用 nginx（Ubuntu 官方源）。
@@ -55,11 +55,11 @@ ssh -L 8080:127.0.0.1:80 root@121.40.54.69
 ### 第 5 步：备案通过后（上线日）
 
 ```bash
-# 1. 云解析 DNS：nextlaunch.cn 加 A 记录 → 121.40.54.69（www 加 CNAME → nextlaunch.cn）
+# 1. 云解析 DNS：fabushike.com 加 A 记录 → 121.40.54.69（www 加 CNAME → fabushike.com）
 # 2. 服务器上配 HTTPS（certbot 自动申请并续期 Let's Encrypt 证书）：
 apt-get install -y python3-certbot-nginx
-certbot --nginx -d nextlaunch.cn -d www.nextlaunch.cn
-# 3. 浏览器验证 https://nextlaunch.cn
+certbot --nginx -d fabushike.com -d www.fabushike.com
+# 3. 浏览器验证 https://fabushike.com
 ```
 
 - 30 天内做**公安备案**：beian.mps.gov.cn
