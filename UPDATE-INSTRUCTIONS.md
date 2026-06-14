@@ -2,10 +2,27 @@
 
 目标文件：`data/events-data.js`（页面 `index.html` 只读取该文件，不要改动页面代码）
 
-## 「科技圈」范围定义
-消费电子发布会（Apple/三星/华为/小米/Google 等）、AI 与开发者大会（WWDC/Build/DevDay/GTC/re:Invent/云栖等）、
-行业大型展会（CES/MWC/IFA/WAIC/进博会等）、游戏与智能汽车（TGA/Gamescom/TGS/Direct/State of Play/特斯拉/蔚小理等）、
-新兴前沿科技（智能穿戴、VR/AR/XR、机器人、无人机、商业航天等）。
+## 「科技圈」范围定义 + 6 大分类与归类规则
+
+**内容边界（含上新）**：不仅收录发布会/大会，也收录科技圈一切重要"上新时刻"——有发布会的产品/活动按下表归类；无发布会、近一月静默上市的产品进「悄悄新品」。
+
+**6 大领域分类（category，互斥单标签，问题1采用独立feed逻辑）**：
+
+| category | 名称 | 涵盖 |
+|---|---|---|
+| `consumer` | 消费电子 | 手机/耳机/手表/影像相机/TV/PC笔电/智能家居/消费芯片(骁龙/苹果A) |
+| `ai_software` | AI · 软件 | AI 大模型与产品(GPT/Claude/Gemini/通义/豆包)、操作系统(鸿蒙/iOS/安卓/Win)、开发者大会(WWDC/IO/Build/DevDay/GTC/re:Invent/云栖) |
+| `expo` | 行业展会 | 跨界大展(CES/MWC/IFA/WAIC/进博会/Web Summit) |
+| `gaming` | 游戏 | 游戏/主机/直面会(TGA/Gamescom/TGS/ChinaJoy/Nintendo Direct/State of Play/GDC) |
+| `auto` | 智能汽车 | 新车/车展/自动驾驶(特斯拉/蔚小理/广州车展) |
+| `frontier` | 前沿科技 | 机器人/具身智能/VR-AR/无人机/商业航天/智能穿戴/AI硬科技芯片(NVIDIA数据中心) |
+
+**归类规则（处理跨域/歧义，人工与 Qwen 都照此）**：
+- 厂商发布会**按主导品类**归：华为发手机为主→consumer，纯鸿蒙→ai_software
+- **开发者大会/系统/软件**（含苹果 WWDC）→ ai_software；**硬件首发**（苹果秋季 iPhone）→ consumer
+- **同厂不同活动分开**：特斯拉新车→auto，特斯拉 Optimus 机器人→frontier
+- **芯片**：消费芯片→consumer，AI/数据中心芯片→frontier 或 ai_software，跟产品语境走
+- **跨界大展**（什么都有）统一进 expo，不拆到各领域
 
 ## 每次更新执行以下步骤
 
@@ -41,7 +58,7 @@
   "name_en": "Event Name",
   "name_zh": "中文名称",
   "organizer": "主办方",
-  "category": "consumer | ai_dev | expo | gaming_auto | frontier | quiet_launch",
+  "category": "consumer | ai_software | expo | gaming | auto | frontier | quiet_launch",
   // recap（可选）：往期总结的长文回顾；有此字段的事件会移入「往期总结」栏目、永久保留
   "recap": "多段回顾文字，段落用空行分隔",
   "date_display_en": "September 9, 2026 / Expected early September 2026",

@@ -4,10 +4,12 @@ const util = require("../../utils/util.js");
 const CATS = [
   { key: "all", label: "全部" },
   { key: "consumer", label: "消费电子" },
-  { key: "ai_dev", label: "AI·开发者" },
+  { key: "ai_software", label: "AI·软件" },
   { key: "expo", label: "行业展会" },
-  { key: "gaming_auto", label: "游戏·汽车" },
+  { key: "gaming", label: "游戏" },
+  { key: "auto", label: "智能汽车" },
   { key: "frontier", label: "前沿科技" },
+  { key: "quiet_launch", label: "悄悄新品" },
 ];
 
 Page({

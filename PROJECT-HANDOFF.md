@@ -16,11 +16,15 @@
 ### 「科技圈」范围定义（用户确认）
 | category | 内容 |
 |---|---|
-| `consumer` | Apple/三星/华为/小米/Google 等硬件发布会 |
-| `ai_dev` | WWDC、OpenAI DevDay、GTC、re:Invent、云栖大会等 |
-| `expo` | CES、MWC、IFA、WAIC、进博会、Web Summit 等 |
-| `gaming_auto` | TGA、Gamescom、TGS、Direct、State of Play、特斯拉、蔚小理等 |
-| `frontier` | 智能穿戴、VR/AR、机器人、无人机、商业航天等 |
+| `consumer` 消费电子 | 手机/耳机/手表/影像/TV/PC笔电/智能家居/消费芯片 |
+| `ai_software` AI·软件 | AI大模型与产品、操作系统、开发者大会(WWDC/IO/Build/DevDay/GTC/云栖) |
+| `expo` 行业展会 | CES/MWC/IFA/WAIC/进博会/Web Summit |
+| `gaming` 游戏 | TGA/Gamescom/TGS/ChinaJoy/Direct/State of Play/GDC |
+| `auto` 智能汽车 | 特斯拉/蔚小理/车展/自动驾驶 |
+| `frontier` 前沿科技 | 机器人/VR-AR/无人机/航天/穿戴/AI硬科技芯片 |
+| `quiet_launch` 悄悄新品 | 无发布会、近一月静默上市的产品(status=released) |
+| `recap` 往期总结 | 有 recap 字段的已结束发布会(独立feed,永久保留) |
+（2026-06-14 由5类细化为6领域+悄悄新品/往期总结；归类规则见 UPDATE-INSTRUCTIONS.md）
 
 ---
 

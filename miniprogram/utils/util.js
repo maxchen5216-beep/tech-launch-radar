@@ -34,6 +34,6 @@ function isPast(e) {
 }
 
 const STATUS_TEXT = { confirmed: "官方确认", expected: "预计", rumored: "传闻" };
-const CAT_TEXT = { consumer: "消费电子", ai_dev: "AI·开发者", expo: "行业展会", gaming_auto: "游戏·汽车", frontier: "前沿科技" };
+const CAT_TEXT = { consumer: "消费电子", ai_software: "AI·软件", expo: "行业展会", gaming: "游戏", auto: "智能汽车", frontier: "前沿科技", quiet_launch: "悄悄新品", recap: "往期总结" };
 
 module.exports = { PRESETS, PRESET_BG, parseAvatar, todayStr, isLive, isPast, STATUS_TEXT, CAT_TEXT };

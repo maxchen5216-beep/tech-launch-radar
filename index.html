@@ -572,7 +572,7 @@
       lg_r: "传闻 — 来自媒体/供应链泄露，待官方确认",
       method: "校验方法：每个条目在收录前均通过联网搜索与官方信息源（官网活动页、官方新闻稿、官方社交账号）交叉比对。「预计」与「传闻」条目为未经官方确认的推断，一切以官方公告为准。数据由定时任务自动复核更新。",
       updated: "数据更新于", privacyLink: "隐私政策",
-      cats: { consumer: "消费电子", ai_dev: "AI · 开发者", expo: "行业展会", gaming_auto: "游戏 · 智能汽车", frontier: "前沿科技", quiet_launch: "悄悄新品", recap: "往期总结" },
+      cats: { consumer: "消费电子", ai_software: "AI · 软件", expo: "行业展会", gaming: "游戏", auto: "智能汽车", frontier: "前沿科技", quiet_launch: "悄悄新品", recap: "往期总结" },
       viewRecap: "📄 查看总结",
       months: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
       monthFmt: (y, m) => y + "年" + I18N.zh.months[m]
@@ -595,13 +595,13 @@
       lg_r: "Rumored — based on media / supply-chain leaks, pending official confirmation",
       method: "Methodology: every entry is cross-checked via web search against official sources (event pages, press releases, official social accounts) before inclusion. 'Expected' and 'Rumored' entries are unconfirmed inferences — official announcements prevail. Data is re-verified and refreshed by a scheduled job.",
       updated: "Data updated", privacyLink: "Privacy Policy",
-      cats: { consumer: "Consumer", ai_dev: "AI · Dev", expo: "Expos", gaming_auto: "Gaming · Auto", frontier: "Frontier", quiet_launch: "Quiet Launch", recap: "Recaps" },
+      cats: { consumer: "Consumer", ai_software: "AI · Software", expo: "Expos", gaming: "Games", auto: "Smart Cars", frontier: "Frontier", quiet_launch: "Quiet Launch", recap: "Recaps" },
       viewRecap: "📄 Read recap",
       monthFmt: (y, m) => ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][m] + " " + y
     }
   };
 
-  const CAT_KEYS = ["consumer", "ai_dev", "expo", "gaming_auto", "frontier", "quiet_launch", "recap"];
+  const CAT_KEYS = ["consumer", "ai_software", "expo", "gaming", "auto", "frontier", "quiet_launch", "recap"];
   const ST_KEYS = ["rumored"]; // 仅保留「传闻」状态筛选（官方确认/预计已去掉）
 
   let lang = localStorage.getItem("tlr-lang") || "zh";
